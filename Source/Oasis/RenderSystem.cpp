@@ -1,16 +1,5 @@
 #include "RenderSystem.h"
 
-//---------------------------- Variables and Objects declaration
-
-
-int WindowSize[2] = { 1280,720 };
-
-bool left_mouse_button, right_mouse_button, firstMouse{true};
-float g_xpos, g_ypos, wc_x, wc_y, Scale_x = 0.05f, Scale_y = Scale_x;
-float LastMPx{ WindowSize[0] / 2.0f }, LastMPy{ WindowSize[1] / 2.0f }, DeltaMPx{ 0.0f }, DeltaMPy{ 0.0f };
-float pitch{ 0.0f }, roll{ 0.0f }, yaw{ -90.0f };
-glm::vec3 direction;
-
 struct KeyFlags
 {
 	bool UpKeyPressed{ false };
@@ -27,7 +16,7 @@ glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 //--------------------------------------------------- CallBacks 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void RenderSystem::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
@@ -54,43 +43,45 @@ void RenderSystem::process_input(GLFWwindow* window)
 		cameraPos -= cameraUp * cameraSpeed;
 }
 
-void cursor_pos_callBack(GLFWwindow* window, double xpos, double ypos)
+void RenderSystem::cursor_pos_callBack(GLFWwindow* window, double xpos, double ypos)
 {
-	if (firstMouse)
+	RenderSystem* self = (RenderSystem*)(glfwGetWindowUserPointer(window));
+	
+	if (self->firstMouse)
 	{
-		LastMPx = xpos;
-		LastMPy = ypos;
-		firstMouse = false;
+		self->LastMPx = xpos;
+		self->LastMPy = ypos;
+		self->firstMouse = false;
 	}
 
-	DeltaMPx = xpos - LastMPx;
-	DeltaMPy = LastMPy - ypos;
-	LastMPx = xpos;
-	LastMPy = ypos;
+	self->DeltaMPx = xpos - self->LastMPx;
+	self->DeltaMPy = self->LastMPy - ypos;
+	self->LastMPx = xpos;
+	self->LastMPy = ypos;
 
 	const float sensitivity = 0.1f;
-	DeltaMPx *= sensitivity;
-	DeltaMPy *= sensitivity;
+	self->DeltaMPx *= sensitivity;
+	self->DeltaMPy *= sensitivity;
 
-	pitch += DeltaMPy;
-	yaw += DeltaMPx;
+	self->pitch += self->DeltaMPy;
+	self->yaw += self->DeltaMPx;
 
-	if (pitch > 180.0f)
-		pitch = 180.0f;
-	else if (pitch < -180)
-		pitch = -180;
-	if (yaw > 180.0f)
-		yaw = 180.0f;
-	else if (yaw < -180)
-		yaw = -180;
+	if (self->pitch > 180.0f)
+		self->pitch = 180.0f;
+	else if (self->pitch < -180)
+		self->pitch = -180;
+	if (self->yaw > 180.0f)
+		self->yaw = 180.0f;
+	else if (self->yaw < -180)
+		self->yaw = -180;
 
-	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	direction.y = sin(glm::radians(pitch));
-	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(direction);
+	self->direction.x = cos(glm::radians(self->yaw)) * cos(glm::radians(self->pitch));
+	self->direction.y = sin(glm::radians(self->pitch));
+	self->direction.z = sin(glm::radians(self->yaw)) * cos(glm::radians(self->pitch));
+	cameraFront = glm::normalize(self->direction);
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void RenderSystem::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 
 	if (!(flags.UpKeyPressed && flags.RightKeyPressed && flags.LeftKeyPressed && flags.DownKeyPressed))
@@ -133,16 +124,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-void mouse_clicked(GLFWwindow* window, int button, int action, int mod)
+void RenderSystem::mouse_clicked(GLFWwindow* window, int button, int action, int mod)
 {
-	left_mouse_button = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1);
-	right_mouse_button = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2);
+	RenderSystem* self = (RenderSystem*)(glfwGetWindowUserPointer(window));
+
+	self->left_mouse_button = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1);
+	self->right_mouse_button = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2);
 }
 
 
 RenderSystem::RenderSystem(int window_size[2]) : WindowSize{ window_size[0], window_size[1] }
 {
+	LastMPx = WindowSize[0] / 2.0f; 
+	LastMPy = WindowSize[1] / 2.0f; 
 	
+	// GLFW initialization ----------------------------------------
 	glfwInit();
 
 	// setting window hints aka OpenGL version and profile
@@ -155,7 +151,6 @@ RenderSystem::RenderSystem(int window_size[2]) : WindowSize{ window_size[0], win
 	if (window == NULL)
 	{
 		std::cout << "window failed to Initialize";
-		//return -1;
 	}
 
 	// setting the window as OpendGl's current context
@@ -168,17 +163,19 @@ RenderSystem::RenderSystem(int window_size[2]) : WindowSize{ window_size[0], win
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
-		//return -1;
 	}
 
-	// CallBacks -----------------------------------------------
-	// updating viewport size if window size is changed CallBack
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, cursor_pos_callBack);
-	glfwSetMouseButtonCallback(window, mouse_clicked);
-	glfwSetKeyCallback(window, key_callback);
+	if (window)
+	{
+		glfwSetWindowUserPointer(window, this);
+		// CallBacks -----------------------------------------------
+		// updating viewport size if window size is changed CallBack
 
-
+		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+		glfwSetCursorPosCallback(window, cursor_pos_callBack);
+		glfwSetMouseButtonCallback(window, mouse_clicked);
+		glfwSetKeyCallback(window, key_callback);
+	}
 }
 
 int RenderSystem::GLFWInit() 
@@ -255,7 +252,6 @@ int RenderSystem::RenderTheQueue()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		if (!RenderQueue.empty())
@@ -269,6 +265,7 @@ int RenderSystem::RenderTheQueue()
 				glm::mat4 view;
 				view = defaultCam.getView();
 				GObj->getShader()->set4mat("view", view);
+				GObj->transform(glm::vec3(1.f, 1.f, 1.f), glm::vec3(0.f, 0.f, -3.f), (float)(glfwGetTime())*glm::vec3(0.0f, 1.f, 0.f));
 				GObj->DrawShape(color.White);
 			}
 		}

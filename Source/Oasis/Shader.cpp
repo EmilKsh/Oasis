@@ -4,7 +4,7 @@
 
 Shader::Shader()
 {
-    this->Init();
+    Init();
 }
 
 void Shader::Init()

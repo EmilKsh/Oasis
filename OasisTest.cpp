@@ -73,14 +73,12 @@ int main()
 	Shader TestShader;
 	TestShader.AddTexture("./Textures/TestTexture.jpg");
 
-	Model suzanneMesh = parseObj("./Meshes/SuzanneTriangulatedMesh.obj");
+	Model suzanneMesh = parseObj("./Meshes/Suzanne.obj");
 	GraphicalObj  suzanneGraphicalObj;
-	
 	suzanneGraphicalObj.SetShader(&TestShader);
-	//suzanneGraphicalObj.indexBuffer = suzanneMesh.indices;
 	suzanneGraphicalObj.VertexUpdate(&suzanneMesh.vertexBuffer, &suzanneMesh.indices);
 	suzanneGraphicalObj.BufferUpdate();
-	suzanneGraphicalObj.transform();
+	//suzanneGraphicalObj.transform(glm::vec3(1.f,1.f,1.f), glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f,0.f,0.f));
 
 	/*GraphicalObj cube;
 	cube.SetShader(&TestShader);
