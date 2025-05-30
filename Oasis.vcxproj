@@ -75,6 +75,10 @@
     <LibraryPath>$(ProjectDir)\Libraries\lib;$(LibraryPath);$(ProjectDir)\Source\Shaders;</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(ProjectDir)\Libraries\Include;$(IncludePath);$(ProjectDir)\Source\Headers</IncludePath>
+    <LibraryPath>$(ProjectDir)\Libraries\lib;$(LibraryPath);$(ProjectDir)\Source\Shaders;</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -127,15 +131,18 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glfw3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Oasis\Model.cpp" />
     <ClCompile Include="OasisTest.cpp" />
     <ClCompile Include="Source\Oasis\Camera.cpp" />
     <ClCompile Include="Libraries\glad.c" />
@@ -144,6 +151,7 @@
     <ClCompile Include="Source\Oasis\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Headers\Model.h" />
     <ClInclude Include="Source\Headers\Camera.h" />
     <ClInclude Include="Source\Headers\GraphicalObject.h" />
     <ClInclude Include="Source\Headers\RenderSystem.h" />

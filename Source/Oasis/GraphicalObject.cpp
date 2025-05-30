@@ -105,7 +105,7 @@ void GraphicalObj::DrawShape(glm::vec3 color)
 			{
 				glBindVertexArray(this->VAO);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+				glDrawElements(GL_TRIANGLES, indexBuffer.size(), GL_UNSIGNED_INT, 0);
 				glBindTexture(GL_TEXTURE_2D, 0);
 				glBindVertexArray(0);
 			}
@@ -123,7 +123,7 @@ void GraphicalObj::DrawShape(glm::vec3 color)
 			{
 				glBindVertexArray(this->VAO);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+				glDrawElements(GL_TRIANGLES, indexBuffer.size(), GL_UNSIGNED_INT, 0);
 				glBindVertexArray(0);
 			}
 			else
@@ -139,8 +139,6 @@ void GraphicalObj::DrawShape(glm::vec3 color)
 
 void GraphicalObj::transform(glm::vec3 scale, glm::vec3 translate, glm::vec3 rotation)
 {
-	
-	
 
 	Shader* ThisObjectShader{ getShader() };
 	ThisObjectShader->use();
