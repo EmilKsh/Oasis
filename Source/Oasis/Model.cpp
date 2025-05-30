@@ -60,9 +60,9 @@ Model parseObj(string filePath = "") {
 			// std::cout << fileAsText << std::endl;
 			// std::cout << fileAsText.substr(id1pos1, id1pos2 - id1pos1) << ", " << fileAsText.substr(id2pos1, id2pos2 - id2pos1) << ", " << fileAsText.substr(id3pos1, id3pos2 - id3pos1) << std::endl;
 
-			tempModel.indices.push_back(std::stoi(fileAsText.substr(id1pos1, id1pos2 - id1pos1)));
-			tempModel.indices.push_back(std::stoi(fileAsText.substr(id2pos1, id2pos2 - id2pos1)));
-			tempModel.indices.push_back(std::stoi(fileAsText.substr(id3pos1, id3pos2 - id3pos1)));
+			tempModel.indices.push_back(std::stoi(fileAsText.substr(id1pos1, id1pos2 - id1pos1))-1);
+			tempModel.indices.push_back(std::stoi(fileAsText.substr(id2pos1, id2pos2 - id2pos1))-1);
+			tempModel.indices.push_back(std::stoi(fileAsText.substr(id3pos1, id3pos2 - id3pos1))-1);
 		}
 	}
 
