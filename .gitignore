@@ -371,3 +371,4 @@ FodyWeavers.xsd
 
 ./Libraries
 /Source/Headers/stb_image.h
+*.mtl
