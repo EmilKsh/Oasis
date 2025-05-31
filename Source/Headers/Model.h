@@ -22,6 +22,7 @@ public:
 	vector<int> indices;
 	vector<float> vertexTexCoords;
 	vector<float> vertexBuffer;
+	vector<float> vertexNormals;
 
 	size_t numOfVertices;
 
