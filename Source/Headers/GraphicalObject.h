@@ -25,15 +25,18 @@ public:
 	void VertexUpdate(vector<float>* vertices, vector<int>* indices = nullptr);
 	void BufferUpdate();
 	void DrawShape(glm::vec3 color = glm::vec3(1.0f,1.0f,1.0f));
-	void transform(glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3 translate = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f));
+	void transform(const glm::vec3& scale = glm::vec3(1.0f, 1.0f, 1.0f), 
+				   const glm::vec3& translate = glm::vec3(0.0f, 0.0f, 0.0f), 
+				   const glm::vec3& rotation = glm::vec3(0.0f, 0.0f, 0.0f));
 	Shader* getShader();
+	glm::mat4 GetTransformMat();
 
 	vector<float> vertexBuffer = {
-		// Postition             Colors                   Texture Coords
-		0.5f, 0.5f, 0.0f,        0.0f, 0.0f, 0.0f,        1.0f, 1.0f,          //top right
-		0.5f, -0.5f, 0.0f,       0.0f, 0.0f, 0.0f,        1.0f, 0.0f,          //bottom right
-		-0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 0.0f,        0.0f, 0.0f,          //bottom left
-		-0.5f, 0.5f, 0.0f,       0.0f, 0.0f, 0.0f,      0.0f, 1.0f           //top left
+		// Postition             Texture Coords
+		0.5f, 0.5f, 0.0f,        1.0f, 1.0f,          //top right
+		0.5f, -0.5f, 0.0f,       1.0f, 0.0f,          //bottom right
+		-0.5f, -0.5f, 0.0f,      0.0f, 0.0f,          //bottom left
+		-0.5f, 0.5f, 0.0f,       0.0f, 1.0f           //top left
 	};
 
 	vector<int> indexBuffer = {
@@ -45,5 +48,6 @@ private:
 	Shader* shader;
 	GLuint VBO{}, VAO{}, EBO{};
 	const char* texturePath;
+	glm::mat4 transformMatrix{glm::mat4(1.f)};
 };
 #endif // !GUI_H4

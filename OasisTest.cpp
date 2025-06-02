@@ -78,14 +78,15 @@ int main()
 	suzanneGraphicalObj.SetShader(&TestShader);
 	suzanneGraphicalObj.VertexUpdate(&suzanneMesh.vertexBuffer, &suzanneMesh.indices);
 	suzanneGraphicalObj.BufferUpdate();
-	//suzanneGraphicalObj.transform(glm::vec3(1.f,1.f,1.f), glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f,0.f,0.f));
+	suzanneGraphicalObj.transform(glm::vec3(1.f,1.f,1.f), glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f,0.f,0.f));
 
-	/*GraphicalObj cube;
-	cube.SetShader(&TestShader);
-	cube.VertexUpdate(&vertices);
-	cube.transform();*/
+	GraphicalObj GroundPlane;
+	GroundPlane.SetShader(&TestShader);
+	GroundPlane.BufferUpdate();
+	GroundPlane.transform(glm::vec3(1.f, 1.f, 1.f), glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f, 0.f, 0.f) * glm::radians(90.f));
 
-	RS.AddToQueue(&suzanneGraphicalObj);
+	RS.AddToQueue(&GroundPlane);
+	//RS.AddToQueue(&suzanneGraphicalObj);
 	RS.RenderTheQueue();
 
 	return 0;

@@ -112,7 +112,7 @@ void GraphicalObj::DrawShape(glm::vec3 color)
 }
 
 
-void GraphicalObj::transform(glm::vec3 scale, glm::vec3 translate, glm::vec3 rotation)
+void GraphicalObj::transform(const glm::vec3& scale, const glm::vec3& translate, const glm::vec3& rotation)
 {
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::scale(model, scale);
@@ -120,11 +120,7 @@ void GraphicalObj::transform(glm::vec3 scale, glm::vec3 translate, glm::vec3 rot
 	if (glm::length(rotation))
 		model = glm::rotate(model, glm::length(rotation), glm::normalize(rotation));
 
-	glm::mat4 projection;
-	projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
-
-	shader->set4mat("model", model);
-	shader->set4mat("projection", projection);
+	transformMatrix = model;
 }
 
 Shader* GraphicalObj::getShader()
@@ -135,4 +131,9 @@ Shader* GraphicalObj::getShader()
 void GraphicalObj::SetShader(Shader* shader)
 {
 	this->shader = shader;
+}
+
+glm::mat4 GraphicalObj::GetTransformMat() 
+{
+	return transformMatrix;
 }
