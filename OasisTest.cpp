@@ -41,7 +41,7 @@ int main()
 	GroundPlane.transform(glm::vec3(1.f, 1.f, 1.f), glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f, 0.f, 0.f) * glm::radians(90.f));
 
 	RS.AddToQueue(&GroundPlane);
-	//RS.AddToQueue(&suzanneGraphicalObj);
+	RS.AddToQueue(&suzanneGraphicalObj);
 	RS.RenderTheQueue();
 
 	return 0;
