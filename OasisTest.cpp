@@ -5,6 +5,7 @@
 #include<math.h>
 #include"RenderSystem.h"
 #include"Model.h"
+#include"IOModel.h"
 
 //#include<ft2build.h>
 //#include FT_FREETYPE_H
@@ -13,53 +14,7 @@ using std::cout, std::endl, std::vector, std::array;
 using namespace std::this_thread;
 using namespace std::chrono;
 
-
-// Cube Coordinates
-vector<float> vertices = {
--0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
- 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
- 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
- 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
--0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
--0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
--0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
- 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
- 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
- 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
--0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
--0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
--0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
--0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
--0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
--0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
--0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
--0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
- 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
- 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
- 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
- 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
- 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
- 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
--0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
- 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
- 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
- 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
--0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
--0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
--0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
- 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
- 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
- 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
--0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
--0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-};
-
-Model parseObj(string filePath = "");
+using model::Model, IOModel::LoadObjModel, render_system::RenderSystem;
 
 //-------------------------------------------------------- Main 
 int main()
@@ -73,7 +28,7 @@ int main()
 	Shader TestShader;
 	TestShader.AddTexture("./Textures/TestTexture.jpg");
 
-	Model suzanneMesh = parseObj("./Meshes/Suzanne.obj");
+	Model suzanneMesh = LoadObjModel("./Meshes/Suzanne.obj");
 	GraphicalObj  suzanneGraphicalObj;
 	suzanneGraphicalObj.SetShader(&TestShader);
 	suzanneGraphicalObj.VertexUpdate(&suzanneMesh.vertexBuffer, &suzanneMesh.indices);
