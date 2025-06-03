@@ -142,6 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Oasis\Light.cpp" />
     <ClCompile Include="Source\Oasis\IOModel.cpp" />
     <ClCompile Include="Source\Oasis\Model.cpp" />
     <ClCompile Include="OasisTest.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="Source\Oasis\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Headers\Light.h" />
     <ClInclude Include="Source\Headers\IOModel.h" />
     <ClInclude Include="Source\Headers\Model.h" />
     <ClInclude Include="Source\Headers\Camera.h" />

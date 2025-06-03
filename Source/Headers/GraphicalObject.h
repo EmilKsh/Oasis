@@ -32,11 +32,11 @@ public:
 	glm::mat4 GetTransformMat();
 
 	vector<float> vertexBuffer = {
-		// Postition             Texture Coords
-		0.5f, 0.5f, 0.0f,        1.0f, 1.0f,          //top right
-		0.5f, -0.5f, 0.0f,       1.0f, 0.0f,          //bottom right
-		-0.5f, -0.5f, 0.0f,      0.0f, 0.0f,          //bottom left
-		-0.5f, 0.5f, 0.0f,       0.0f, 1.0f           //top left
+		// Postition             Texture Coords		Vertex Normal
+		0.5f, 0.5f, 0.0f,        1.0f, 1.0f,		0.f, 1.f, 0.f,       //top right
+		0.5f, -0.5f, 0.0f,       1.0f, 0.0f,		0.f, 1.f, 0.f,       //bottom right
+		-0.5f, -0.5f, 0.0f,      0.0f, 0.0f,		0.f, 1.f, 0.f,       //bottom left
+		-0.5f, 0.5f, 0.0f,       0.0f, 1.0f,		0.f, 1.f, 0.f        //top left
 	};
 
 	vector<int> indexBuffer = {

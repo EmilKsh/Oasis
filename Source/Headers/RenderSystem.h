@@ -1,6 +1,7 @@
 #pragma once
 #include"GraphicalObject.h"
 #include"Camera.h"
+#include"Light.h"
 
 namespace render_system {
 	class RenderSystem
@@ -16,6 +17,7 @@ namespace render_system {
 		float getDeltaTime();
 
 	private:
+		float totalTime{ 0.f };
 		float deltaTime = 0.0f;	// Time between current frame and last frame
 		float lastFrame = 0.0f; // Time of last frame
 		float currentFrame = 0.0f;
@@ -31,6 +33,7 @@ namespace render_system {
 		Colors color;
 
 		Camera defaultCam;
+		Light pointLight;
 
 		static void cursor_pos_callBack(GLFWwindow* window, double xpos, double ypos);
 		static void framebuffer_size_callback(GLFWwindow* window, int width, int height);

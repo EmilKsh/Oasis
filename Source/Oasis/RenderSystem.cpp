@@ -29,7 +29,7 @@ namespace render_system
 			glfwSetWindowShouldClose(window, true);
 		}
 
-		const float cameraSpeed = 3.0f * getDeltaTime(); // adjust accordingly
+		const float cameraSpeed = 100.0f * getDeltaTime(); // adjust accordingly
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 			cameraPos += cameraSpeed * cameraFront;
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -254,6 +254,10 @@ namespace render_system
 			glfwPollEvents();
 			glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			
+			//RenderQueue[1]->transform(glm::vec3(1.f, 1.f, 1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.0f, 0.f) * glm::radians(totalTime*1000));
+			pointLight.position.x = 3.f * cos(totalTime * 100.f);
+			pointLight.position.z = -1.f * sin(totalTime * 100.f);
 
 			if (!RenderQueue.empty())
 			{
@@ -267,13 +271,17 @@ namespace render_system
 					const glm::mat4& projection = defaultCam.GetProjection();
 
 					// Draw Object
-					GObj->getShader()->set4mat("view", view);
-					GObj->getShader()->set4mat("projection", projection);
-					//GObj->transform(glm::vec3(1.f, 1.f, 1.f), glm::vec3(0.f, 0.f, -3.f), (float)(glfwGetTime()) * glm::vec3(0.0f, 1.f, 0.f));
-					GObj->getShader()->set4mat("model", GObj->GetTransformMat());
+					Shader* currentShader = GObj->getShader();
+					currentShader->use();
+					currentShader->set3fv("lightPos", pointLight.position);
+					currentShader->setFloat("lightIntensity", pointLight.intensity);
+					currentShader->set4mat("view", view);
+					currentShader->set4mat("projection", projection);
+					currentShader->set4mat("model", GObj->GetTransformMat());
 					GObj->DrawShape(color.White);
 				}
 			}
+			totalTime += deltaTime;
 		}
 
 		// Unbinding and closing all glfw windows and clearing opbjects

@@ -25,20 +25,21 @@ int main()
 	// RenderSystem definition also initializes OpenGL so any any OpenGL functions should be used after the init
 	RenderSystem RS(window);
 
-	Shader TestShader;
-	TestShader.AddTexture("./Textures/TestTexture.jpg");
-
+	Shader basicShader;
+	//basicShader.AddTexture("./Textures/TestTexture.jpg");
 	Model suzanneMesh = LoadObjModel("./Meshes/Suzanne.obj");
 	GraphicalObj  suzanneGraphicalObj;
-	suzanneGraphicalObj.SetShader(&TestShader);
+	suzanneGraphicalObj.SetShader(&basicShader);
 	suzanneGraphicalObj.VertexUpdate(&suzanneMesh.vertexBuffer, &suzanneMesh.indices);
 	suzanneGraphicalObj.BufferUpdate();
 	suzanneGraphicalObj.transform(glm::vec3(1.f,1.f,1.f), glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f,0.f,0.f));
 
+	Shader testShader;
+	testShader.AddTexture("./Textures/TestTexture.jpg");
 	GraphicalObj GroundPlane;
-	GroundPlane.SetShader(&TestShader);
+	GroundPlane.SetShader(&testShader);
 	GroundPlane.BufferUpdate();
-	GroundPlane.transform(glm::vec3(1.f, 1.f, 1.f), glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f, 0.f, 0.f) * glm::radians(90.f));
+	GroundPlane.transform(glm::vec3(10.f, 10.f, 10.f), glm::vec3(0.f, -1.f, -3.f), glm::vec3(1.f, 0.f, 0.f) * glm::radians(90.f));
 
 	RS.AddToQueue(&GroundPlane);
 	RS.AddToQueue(&suzanneGraphicalObj);

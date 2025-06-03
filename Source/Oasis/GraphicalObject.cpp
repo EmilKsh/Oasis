@@ -1,21 +1,5 @@
 #include"GraphicalObject.h"
 
-
-vector<glm::vec3> BoxLocations = {
-	//glm::vec3(0.0f,  0.0f,  0.0f),
-	//glm::vec3(2.0f,  5.0f, -15.0f),
-	//glm::vec3(-1.5f, -2.2f, -2.5f),
-	//glm::vec3(-3.8f, -2.0f, -12.3f),
-	glm::vec3(2.4f, -0.4f, -3.5f),
-	//glm::vec3(-1.7f,  3.0f, -7.5f),
-	//glm::vec3(1.3f, -2.0f, -2.5f),
-	//glm::vec3(1.5f,  2.0f, -2.5f),
-	//glm::vec3(1.5f,  0.2f, -1.5f),
-	glm::vec3(-1.3f,  1.0f, -1.5f)
-};
-
-// Graphical Object Class Functions -----------------------------------------------------------------------------------
-
 GraphicalObj::~GraphicalObj()
 {
 	glDeleteBuffers(1, &VBO);
@@ -40,11 +24,14 @@ void GraphicalObj::BufferUpdate()
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.size() * sizeof(int), static_cast<const void*>(indexBuffer.data()), GL_STATIC_DRAW);
 	}
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 }
 
 
@@ -74,7 +61,6 @@ void GraphicalObj::DrawShape(glm::vec3 color)
 	//this->BufferUpdate();
 	if (shader)
 	{
-		shader->use();
 		shader->set3fv("myColor", color);
 	}	
 
@@ -85,6 +71,7 @@ void GraphicalObj::DrawShape(glm::vec3 color)
 	glBindVertexArray(this->VAO);
 	if (shader->HasTexture())
 	{
+		shader->setBool("hasTexture", true);
 		glBindTexture(GL_TEXTURE_2D, shader->texture);
 	
 		if (!indexBuffer.empty())
@@ -99,6 +86,7 @@ void GraphicalObj::DrawShape(glm::vec3 color)
 	}
 	else
 	{
+		shader->setBool("hasTexture", false);
 		if (!indexBuffer.empty())
 		{
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
@@ -115,8 +103,8 @@ void GraphicalObj::DrawShape(glm::vec3 color)
 void GraphicalObj::transform(const glm::vec3& scale, const glm::vec3& translate, const glm::vec3& rotation)
 {
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::scale(model, scale);
 	model = glm::translate(model, translate);
+	model = glm::scale(model, scale);
 	if (glm::length(rotation))
 		model = glm::rotate(model, glm::length(rotation), glm::normalize(rotation));
 

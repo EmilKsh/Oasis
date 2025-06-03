@@ -79,19 +79,23 @@ namespace IOModel{
 					const size_t& pos2 = fileAsText.substr(pos1).find(" ") + pos1;
 					const size_t& vtpos = fileAsText.substr(pos1).find("/") + pos1 + 1;
 					const size_t& vnpos = fileAsText.substr(vtpos).find("/") + vtpos + 1;
-					const size_t& vtid = std::stoi(fileAsText.substr(vtpos, vnpos - vtpos - 1)) - 1;
 					const int& vid = std::stoi(fileAsText.substr(pos1, pos2 - pos1)) - 1;
+					const size_t& vtid = std::stoi(fileAsText.substr(vtpos, vnpos - vtpos - 1)) - 1;
+					const size_t& vnid = std::stoi(fileAsText.substr(vnpos, pos2)) - 1;
 					const std::tuple<int, int>& key{ vid, vtid };
 
 
 					if (!indexMap.contains(key))
 					{
-						indexMap[key] = tempBuffer.size() / 5;
+						indexMap[key] = tempBuffer.size() / 8;
 						tempBuffer.push_back(tempModel.vertexPoses.at(3 * vid));
 						tempBuffer.push_back(tempModel.vertexPoses.at(3 * vid + 1));
 						tempBuffer.push_back(tempModel.vertexPoses.at(3 * vid + 2));
 						tempBuffer.push_back(tempModel.vertexTexCoords.at(2 * vtid));
 						tempBuffer.push_back(tempModel.vertexTexCoords.at(2 * vtid + 1));
+						tempBuffer.push_back(tempModel.vertexNormals.at(3 * vnid));
+						tempBuffer.push_back(tempModel.vertexNormals.at(3 * vnid + 1));
+						tempBuffer.push_back(tempModel.vertexNormals.at(3 * vnid + 2));
 					}
 
 					tempModel.indices.push_back(indexMap[key]);
@@ -101,9 +105,9 @@ namespace IOModel{
 		}
 
 		tempModel.numOfVertices = tempModel.vertexPoses.size() / 3;
-		std::cout << "number of vertices: " << tempModel.vertexPoses.size() / 3 << std::endl;
-		std::cout << "number of indices: " << tempModel.indices.size() << std::endl;
-		std::cout << "number of vertex texture coords: " << tempModel.vertexTexCoords.size() / 2 << std::endl;
+		//std::cout << "number of vertices: " << tempModel.vertexPoses.size() / 3 << std::endl;
+		//std::cout << "number of indices: " << tempModel.indices.size() << std::endl;
+		//std::cout << "number of vertex texture coords: " << tempModel.vertexTexCoords.size() / 2 << std::endl;
 		tempModel.vertexBuffer = tempBuffer;
 		return tempModel;
 	}
