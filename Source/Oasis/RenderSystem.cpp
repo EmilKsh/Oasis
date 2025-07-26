@@ -176,6 +176,7 @@ namespace render_system
 			glfwSetCursorPosCallback(window, cursor_pos_callBack);
 			glfwSetMouseButtonCallback(window, mouse_clicked);
 			glfwSetKeyCallback(window, key_callback);
+			glEnable(GL_DEPTH_TEST);
 		}
 	}
 
@@ -239,57 +240,50 @@ namespace render_system
 		return -1;
 	}
 
+	bool RenderSystem::CheckWindowClosureStatus() {
+		return !glfwWindowShouldClose(window);
+	}
+
 	int RenderSystem::RenderTheQueue()
 	{
-		glEnable(GL_DEPTH_TEST);
+		// GLFW background setup
 
-		while (!glfwWindowShouldClose(window))
-		{
-			// GLFW background setup
-
-			process_input(window);
-			//Camera
-
-			glfwSwapBuffers(window);
-			glfwPollEvents();
-			glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		process_input(window);
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+		glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			
-			//RenderQueue[1]->transform(glm::vec3(1.f, 1.f, 1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.0f, 0.f) * glm::radians(totalTime*1000));
-			pointLight.position.x = 3.f * cos(totalTime * 100.f);
-			pointLight.position.z = -1.f * sin(totalTime * 100.f);
+		//RenderQueue[1]->transform(glm::vec3(1.f, 1.f, 1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.0f, 0.f) * glm::radians(totalTime*1000));
+		pointLight.position.x = 3.f * cos(totalTime * 100.f);
+		pointLight.position.z = -1.f * sin(totalTime * 100.f);
 
-			if (!RenderQueue.empty())
+		if (!RenderQueue.empty())
+		{
+			for (GraphicalObj* GObj : RenderQueue)
 			{
-				for (GraphicalObj* GObj : RenderQueue)
+				CalcDeltaTime();
+
+				// Camera
+				if (right_mouse_button)
 				{
-					CalcDeltaTime();
-
-					// Camera
 					defaultCam.setTransform(cameraPos, cameraFront, cameraUp);
-					const glm::mat4& view = defaultCam.getView();
-					const glm::mat4& projection = defaultCam.GetProjection();
-
-					// Draw Object
-					Shader* currentShader = GObj->getShader();
-					currentShader->use();
-					currentShader->set3fv("lightPos", pointLight.position);
-					currentShader->setFloat("lightIntensity", pointLight.intensity);
-					currentShader->set4mat("view", view);
-					currentShader->set4mat("projection", projection);
-					currentShader->set4mat("model", GObj->GetTransformMat());
-					GObj->DrawShape(color.White);
 				}
-			}
-			totalTime += deltaTime;
-		}
+				const glm::mat4& view = defaultCam.getView();
+				const glm::mat4& projection = defaultCam.GetProjection();
 
-		// Unbinding and closing all glfw windows and clearing opbjects
-		glBindVertexArray(0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glfwTerminate();
-		return 0;
+				// Draw Object
+				Shader* currentShader = GObj->getShader();
+				currentShader->use();
+				currentShader->set3fv("lightPos", pointLight.position);
+				currentShader->setFloat("lightIntensity", pointLight.intensity);
+				currentShader->set4mat("view", view);
+				currentShader->set4mat("projection", projection);
+				currentShader->set4mat("model", GObj->GetTransformMat());
+				GObj->DrawShape(color.White);
+			}
+		}
+		totalTime += deltaTime;
 	}
 
 	void RenderSystem::AddToQueue(GraphicalObj* Obj)
@@ -307,5 +301,14 @@ namespace render_system
 	float RenderSystem::getDeltaTime()
 	{
 		return deltaTime;
+	}
+
+	void RenderSystem::Terminate()
+	{
+		// Unbinding and closing all glfw windows and clearing opbjects
+		glBindVertexArray(0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glfwTerminate();
 	}
 }

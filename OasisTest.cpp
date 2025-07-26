@@ -20,6 +20,7 @@ using model::Model, IOModel::LoadObjModel, render_system::RenderSystem;
 int main()
 {
 	int window[2]{ 1080, 1080 };
+	float timer{ 0.f };
 	Colors color;
 
 	// RenderSystem definition also initializes OpenGL so any any OpenGL functions should be used after the init
@@ -39,11 +40,18 @@ int main()
 	GraphicalObj GroundPlane;
 	GroundPlane.SetShader(&testShader);
 	GroundPlane.BufferUpdate();
-	GroundPlane.transform(glm::vec3(10.f, 10.f, 10.f), glm::vec3(0.f, -1.f, -3.f), glm::vec3(1.f, 0.f, 0.f) * glm::radians(90.f));
+	GroundPlane.transform(glm::vec3(10.f, 10.f, 10.f), glm::vec3(0.f, -1.f, -0.f), glm::vec3(1.f, 0.f, 0.f) * glm::radians(90.f));
 
 	RS.AddToQueue(&GroundPlane);
 	RS.AddToQueue(&suzanneGraphicalObj);
-	RS.RenderTheQueue();
 
+	while (RS.CheckWindowClosureStatus())
+	{
+		suzanneGraphicalObj.transform(glm::vec3(1.f), glm::vec3(0.f), timer * glm::vec3(0.f, 1.f, 0.f) * 20.f);
+		RS.RenderTheQueue();
+		timer += RS.getDeltaTime();
+	}
+	
+	RS.Terminate();
 	return 0;
 }

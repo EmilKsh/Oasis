@@ -15,6 +15,8 @@ namespace render_system {
 		void AddToQueue(GraphicalObj* Obj);
 		void CalcDeltaTime();
 		float getDeltaTime();
+		bool CheckWindowClosureStatus();
+		void Terminate();
 
 	private:
 		float totalTime{ 0.f };
