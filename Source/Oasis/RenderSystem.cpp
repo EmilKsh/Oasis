@@ -22,7 +22,7 @@ namespace render_system
 		glViewport(0, 0, width, height);
 	}
 
-	void RenderSystem::process_input(GLFWwindow* window)
+	void RenderSystem::ProcessInput(GLFWwindow* window)
 	{
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		{
@@ -139,45 +139,18 @@ namespace render_system
 		LastMPx = WindowSize[0] / 2.0f;
 		LastMPy = WindowSize[1] / 2.0f;
 
-		// GLFW initialization ----------------------------------------
-		glfwInit();
+		aspecRatio = float(window_size[0]) / window_size[1];
 
-		// setting window hints aka OpenGL version and profile
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		GLFWInit();
+		glGenBuffers(1, &VBO);
+		glGenVertexArrays(1, &VAO);
+		defaultShader.Init("./Oasis/Source/Shaders/SimpleShader");
+	}
 
-		// setting up the window and error handling
-		window = glfwCreateWindow(WindowSize[0], WindowSize[1], "Pathfinder", NULL, NULL);
-		if (window == NULL)
-		{
-			std::cout << "window failed to Initialize";
-		}
-
-		// setting the window as OpendGl's current context
-		glfwMakeContextCurrent(window);
-
-		//Turning VSync Off! :/
-		glfwSwapInterval(0);
-
-		// glad loading error handling
-		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-		{
-			std::cout << "Failed to initialize GLAD" << std::endl;
-		}
-
-		if (window)
-		{
-			glfwSetWindowUserPointer(window, this);
-			// CallBacks -----------------------------------------------
-			// updating viewport size if window size is changed CallBack
-
-			glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-			glfwSetCursorPosCallback(window, cursor_pos_callBack);
-			glfwSetMouseButtonCallback(window, mouse_clicked);
-			glfwSetKeyCallback(window, key_callback);
-			glEnable(GL_DEPTH_TEST);
-		}
+	RenderSystem::~RenderSystem() 
+	{
+		glDeleteBuffers(1, &VBO);
+		glDeleteVertexArrays(1, &VAO);
 	}
 
 	int RenderSystem::GLFWInit()
@@ -194,7 +167,7 @@ namespace render_system
 		window = glfwCreateWindow(WindowSize[0], WindowSize[1], "Pathfinder", NULL, NULL);
 		if (window == NULL)
 		{
-			std::cout << "window failed to Initialize";
+			printf("GLFW initialization failed: window not created");			
 			return -1;
 		}
 
@@ -208,15 +181,19 @@ namespace render_system
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
 			std::cout << "Failed to initialize GLAD" << std::endl;
-			return -1;
 		}
 
+		glfwSetWindowUserPointer(window, this);
 		// CallBacks -----------------------------------------------
 		// updating viewport size if window size is changed CallBack
+
 		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 		glfwSetCursorPosCallback(window, cursor_pos_callBack);
 		glfwSetMouseButtonCallback(window, mouse_clicked);
 		glfwSetKeyCallback(window, key_callback);
+		glEnable(GL_DEPTH_TEST);
+		
+		return 0;
 	}
 
 	int RenderSystem::FreeTypeInit()
@@ -244,11 +221,20 @@ namespace render_system
 		return !glfwWindowShouldClose(window);
 	}
 
-	int RenderSystem::RenderTheQueue()
+	void RenderSystem::UpdateWindow() 
+	{
+		ProcessInput(window);
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+		glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void RenderSystem::RenderTheQueue()
 	{
 		// GLFW background setup
 
-		process_input(window);
+		ProcessInput(window);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
@@ -280,7 +266,7 @@ namespace render_system
 				currentShader->set4mat("view", view);
 				currentShader->set4mat("projection", projection);
 				currentShader->set4mat("model", GObj->GetTransformMat());
-				GObj->DrawShape(color.White);
+				GObj->DrawShape(Colors::White);
 			}
 		}
 		totalTime += deltaTime;
@@ -310,5 +296,80 @@ namespace render_system
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glfwTerminate();
+	}
+
+	void RenderSystem::DrawCircle(const float x, const float y, const float r, const int numberOfSides, Colors color)
+	{
+		const int& numberOfVertices = numberOfSides + 2;
+		vector<GLfloat> vertices;
+
+		vertices.push_back(x);
+		vertices.push_back(y * aspecRatio);
+		vertices.push_back(0);
+
+		for (size_t i = 0; i < numberOfVertices - 1; i++)
+		{
+			const float& angle = i * 2 * glm::pi<float>() / numberOfSides;
+			vertices.push_back(x + sin(angle) * r); // x
+			vertices.push_back(y + cos(angle) * r * aspecRatio); // y
+			vertices.push_back(0);
+		}
+
+		defaultShader.use();
+		defaultShader.set3fv("myColor", ColorValues[color]);
+
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_DYNAMIC_DRAW);
+		
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+
+		glBindVertexArray(VAO);
+		
+		glDrawArrays(GL_TRIANGLE_FAN, 0, numberOfVertices);
+	}
+
+
+	void RenderSystem::DrawPoint(const float x, const float y, const float pointSize, Colors color)
+	{
+		vector<GLfloat> vertices;
+
+		vertices.push_back(x + pointSize / 2.f);
+		vertices.push_back(y + pointSize * aspecRatio / 2.f);
+		vertices.push_back(0);
+		vertices.push_back(x + pointSize / 2.f);
+		vertices.push_back(y - pointSize * aspecRatio / 2.f);
+		vertices.push_back(0);
+		vertices.push_back(x - pointSize / 2.f);
+		vertices.push_back(y - pointSize * aspecRatio / 2.f);
+		vertices.push_back(0);
+		vertices.push_back(x - pointSize / 2.f);
+		vertices.push_back(y - pointSize * aspecRatio / 2.f);
+		vertices.push_back(0);
+		vertices.push_back(x - pointSize / 2.f);
+		vertices.push_back(y + pointSize * aspecRatio / 2.f);
+		vertices.push_back(0);
+		vertices.push_back(x + pointSize / 2.f);
+		vertices.push_back(y + pointSize * aspecRatio / 2.f);
+		vertices.push_back(0);
+
+		vector<int> indexBuffer = {
+		0, 1, 3,
+		1, 2, 3,
+		};
+
+		defaultShader.use();
+		defaultShader.set3fv("myColor", ColorValues[color]);
+
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_DYNAMIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 18);
 	}
 }

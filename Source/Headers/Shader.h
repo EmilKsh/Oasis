@@ -11,6 +11,7 @@
 #include<fstream>
 #include<sstream>
 #include<iostream>
+#include<filesystem>
 
 using std::string;
 
@@ -19,7 +20,7 @@ class Shader
 public:
 	unsigned int ID;
 	Shader();
-	void Init();
+	void Init(string shaderFilePath);
 	void use();
 	void AddTexture(const char* filePath);
 	void setBool(const string &name, bool value) const;

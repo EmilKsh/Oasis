@@ -4,18 +4,18 @@
 
 Shader::Shader()
 {
-    Init();
+    //Init();
 }
 
-void Shader::Init()
+void Shader::Init(string shaderFilePath)
 {
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
         // open files
-        vShaderFile.open("./Source/Shaders/Shader.vs");
-        fShaderFile.open("./Source/Shaders/Shader.fs");
+        vShaderFile.open(shaderFilePath + ".vs");
+        fShaderFile.open(shaderFilePath + ".fs");
         std::stringstream vShaderStream, fShaderStream;
         // read file's buffer contents into streams
         vShaderStream << vShaderFile.rdbuf();

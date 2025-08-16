@@ -1,5 +1,12 @@
 #include"GraphicalObject.h"
 
+std::map<Colors, glm::vec3> ColorValues = {
+	{Colors::Amber, glm::vec3(1.0f, 0.75f, 0.0f) },
+	{Colors::White, glm::vec3(1.0f, 1.0f, 1.0f) },
+	{Colors::Blue, glm::vec3(0.0f, 0.102f, 1.0f) },
+	{Colors::Black, glm::vec3(0.f)}
+};
+
 GraphicalObj::~GraphicalObj()
 {
 	glDeleteBuffers(1, &VBO);
@@ -56,12 +63,12 @@ void GraphicalObj::VertexUpdate(vector<float>* vertices, vector<int>* indices)
 	this->BufferUpdate();
 }
 
-void GraphicalObj::DrawShape(glm::vec3 color)
+void GraphicalObj::DrawShape(Colors color)
 {
 	//this->BufferUpdate();
 	if (shader)
 	{
-		shader->set3fv("myColor", color);
+		shader->set3fv("myColor", ColorValues[color]);
 	}	
 
 	/*for (glm::vec3 trans: BoxLocations)
