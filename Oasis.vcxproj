@@ -144,11 +144,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Libraries\glad.c" />
     <ClCompile Include="Source\Oasis\Light.cpp" />
     <ClCompile Include="Source\Oasis\IOModel.cpp" />
     <ClCompile Include="Source\Oasis\Model.cpp" />
     <ClCompile Include="Source\Oasis\Camera.cpp" />
-    <ClCompile Include="Libraries\glad.c" />
     <ClCompile Include="Source\Oasis\GraphicalObject.cpp" />
     <ClCompile Include="Source\Oasis\RenderSystem.cpp" />
     <ClCompile Include="Source\Oasis\Shader.cpp" />
