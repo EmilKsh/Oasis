@@ -144,7 +144,7 @@ namespace render_system
 		GLFWInit();
 		glGenBuffers(1, &VBO);
 		glGenVertexArrays(1, &VAO);
-		defaultShader.Init("./Oasis/Source/Shaders/SimpleShader");
+		defaultShader.Init("../Oasis/Source/Shaders/SimpleShader");
 	}
 
 	RenderSystem::~RenderSystem() 
@@ -371,5 +371,19 @@ namespace render_system
 
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 18);
+	}
+
+	glm::vec2 RenderSystem::ToScreenSpaceFitHorizontal(double x, double y, const float worldSize[2])
+	{
+		const float& scale = WindowSize[0] / worldSize[0];
+
+		return glm::vec2(x / worldSize[0], y * scale / WindowSize[1]);
+	}
+
+	glm::vec2 RenderSystem::ToScreenSpaceFitVertical(double x, double y, const float worldSize[2])
+	{
+		const float& scale = WindowSize[1] / worldSize[1];
+
+		return glm::vec2(x * scale / WindowSize[0], y / worldSize[1]);
 	}
 }

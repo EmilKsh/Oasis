@@ -24,6 +24,8 @@ namespace render_system {
 		float getDeltaTime();
 		bool CheckWindowClosureStatus();
 		void Terminate();
+		glm::vec2 ToScreenSpaceFitHorizontal(double x, double y, const float wolrdSize[2]);
+		glm::vec2 ToScreenSpaceFitVertical(double x, double y, const float wolrdSize[2]);
 
 	public:
 		float aspecRatio;
