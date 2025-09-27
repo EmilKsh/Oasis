@@ -1,11 +1,20 @@
 #ifndef RENDER_SYSTEM
 #define RENDER_SYSTEM
 
+#include"ft2build.h"
+#include FT_FREETYPE_H
 #include"GraphicalObject.h"
 #include"Camera.h"
 #include"Light.h"
 
+
 namespace render_system {
+	struct Character {
+		unsigned int TextureID;  // ID handle of the glyph texture
+		glm::ivec2   Size;       // Size of glyph
+		glm::ivec2   Bearing;    // Offset from baseline to left/top of glyph
+		unsigned int Advance;    // Offset to advance to next glyph
+	};
 
 	class RenderSystem
 	{
@@ -26,6 +35,7 @@ namespace render_system {
 		void Terminate();
 		glm::vec2 ToScreenSpaceFitHorizontal(double x, double y, const float wolrdSize[2]);
 		glm::vec2 ToScreenSpaceFitVertical(double x, double y, const float wolrdSize[2]);
+		void RenderText(std::string text, float x, float y, float scale, glm::vec3 color);
 
 	public:
 		float aspecRatio;
@@ -44,8 +54,11 @@ namespace render_system {
 		glm::vec3 direction{ 0.f };
 		Camera defaultCam;
 		Light pointLight;
-		GLuint VAO, VBO;
+		GLuint VAO, VBO, textVAO, textVBO;
 		Shader defaultShader;
+		Shader textShader;
+
+		std::map<char, Character> Characters;
 
 		static void cursor_pos_callBack(GLFWwindow* window, double xpos, double ypos);
 		static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
