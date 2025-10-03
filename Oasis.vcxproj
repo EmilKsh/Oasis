@@ -172,6 +172,7 @@
     <None Include="SimpleShader.fs" />
     <None Include="Source\Shaders\Shader.fs" />
     <None Include="Source\Shaders\Shader.vs" />
+    <None Include="Source\Shaders\SimpleShader.fs" />
     <None Include="Source\Shaders\SimpleShader.vs" />
     <None Include="Source\Shaders\TextShader.fs" />
     <None Include="Source\Shaders\TextShader.vs" />

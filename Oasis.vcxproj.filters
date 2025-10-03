@@ -86,5 +86,6 @@
       <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="Source\Shaders\TextShader.fs" />
+    <None Include="Source\Shaders\SimpleShader.fs" />
   </ItemGroup>
 </Project>
