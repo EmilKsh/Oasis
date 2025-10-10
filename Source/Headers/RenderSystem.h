@@ -19,7 +19,7 @@ namespace render_system {
 	class RenderSystem
 	{
 	public:
-		RenderSystem(int WindowSize[2]);
+		RenderSystem(int WindowSize[2], char* windowName = (char*)"Viewport");
 		~RenderSystem();
 		int GLFWInit();
 		int FreeTypeInit();
@@ -50,6 +50,7 @@ namespace render_system {
 
 
 		GLFWwindow* window{ nullptr };
+		char* windowName{};
 		vector<GraphicalObj*> RenderQueue{};
 		glm::vec3 direction{ 0.f };
 		Camera defaultCam;

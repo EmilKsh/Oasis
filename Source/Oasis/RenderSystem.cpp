@@ -134,7 +134,7 @@ namespace render_system
 	}
 
 
-	RenderSystem::RenderSystem(int window_size[2]) : WindowSize{ window_size[0], window_size[1] }
+	RenderSystem::RenderSystem(int window_size[2], char* windowName) : WindowSize{ window_size[0], window_size[1] }, windowName{ windowName }
 	{
 		LastMPx = WindowSize[0] / 2.0f;
 		LastMPy = WindowSize[1] / 2.0f;
@@ -166,7 +166,7 @@ namespace render_system
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 		// setting up the window and error handling
-		window = glfwCreateWindow(WindowSize[0], WindowSize[1], "Pathfinder", NULL, NULL);
+		window = glfwCreateWindow(WindowSize[0], WindowSize[1], windowName, NULL, NULL);
 		if (window == NULL)
 		{
 			printf("GLFW initialization failed: window not created");			
