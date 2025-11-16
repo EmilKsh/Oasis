@@ -26,17 +26,20 @@ namespace render_system {
 		void UpdateWindow();
 		void ProcessInput(GLFWwindow* window);
 		void RenderTheQueue();
+		void RenderPointCloud(const vector<float>& positions, const vector<float>& colors, const int& count, Shader& shader, const float& pointSize);
 		void DrawCircle(const float x, const float y, const float r, const int numberOfSides = 8, Colors color = Colors::White);
 		void DrawPoint(const float x, const float y, const float pointSize = 0.01f, Colors color = Colors::White);
 		void AddToQueue(GraphicalObj* Obj);
 		void CalcDeltaTime();
-		float getDeltaTime();
 		bool CheckWindowClosureStatus();
 		void Terminate();
 		glm::vec2 ToScreenSpaceFitHorizontal(double x, double y, const float wolrdSize[2]);
 		glm::vec2 ToScreenSpaceFitVertical(double x, double y, const float wolrdSize[2]);
 		void RenderText(std::string text, float x, float y, float scale, glm::vec3 color);
 
+		float GetDeltaTime();
+		glm::vec2 GetCursorPos() { return glm::vec2(LastMPx, LastMPy); };
+		
 	public:
 		float aspecRatio;
 		float totalTime{ 0.f };
@@ -55,8 +58,8 @@ namespace render_system {
 		glm::vec3 direction{ 0.f };
 		Camera defaultCam;
 		Light pointLight;
-		GLuint VAO, VBO, textVAO, textVBO;
-		Shader defaultShader;
+		GLuint VAO, VBO, posVBO, colVBO, textVAO, textVBO;
+		Shader defaultShader, pointShader;
 		Shader textShader;
 
 		std::map<char, Character> Characters;

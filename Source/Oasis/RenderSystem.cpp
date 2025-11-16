@@ -29,7 +29,7 @@ namespace render_system
 			glfwSetWindowShouldClose(window, true);
 		}
 
-		const float cameraSpeed = 100.0f * getDeltaTime(); // adjust accordingly
+		const float cameraSpeed = 100.0f * GetDeltaTime(); // adjust accordingly
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 			cameraPos += cameraSpeed * cameraFront;
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -143,8 +143,11 @@ namespace render_system
 
 		GLFWInit();
 		glGenBuffers(1, &VBO);
+		glGenBuffers(1, &posVBO);
+		glGenBuffers(1, &colVBO);
 		glGenVertexArrays(1, &VAO);
 		defaultShader.Init("../Oasis/Source/Shaders/SimpleShader");
+		pointShader.Init("../Oasis/Source/Shaders/PointShader");
 
 		FreeTypeInit();
 	}
@@ -258,6 +261,28 @@ namespace render_system
 		RenderQueue.push_back(Obj);
 	}
 
+	void RenderSystem::RenderPointCloud(const vector<float>& positions, const vector<float>& colors, const int& count, Shader& shader, const float& pointSize)
+	{
+		glBindVertexArray(VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(float), positions.data(), GL_DYNAMIC_DRAW);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, colVBO);
+		glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_DYNAMIC_DRAW);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glEnableVertexAttribArray(1);
+
+		shader.use();
+
+		glPointSize(pointSize);
+		glDrawArrays(GL_POINTS, 0, count);
+
+		glBindVertexArray(0);
+	}
+
 	void RenderSystem::CalcDeltaTime()
 	{
 		currentFrame = glfwGetTime();
@@ -265,7 +290,7 @@ namespace render_system
 		lastFrame = currentFrame;
 	}
 
-	float RenderSystem::getDeltaTime()
+	float RenderSystem::GetDeltaTime()
 	{
 		return deltaTime;
 	}

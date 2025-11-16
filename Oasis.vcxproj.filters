@@ -87,5 +87,7 @@
     </None>
     <None Include="Source\Shaders\TextShader.fs" />
     <None Include="Source\Shaders\SimpleShader.fs" />
+    <None Include="Source\Shaders\PointShader.vs" />
+    <None Include="Source\Shaders\PointShader.fs" />
   </ItemGroup>
 </Project>

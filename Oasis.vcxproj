@@ -170,6 +170,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleShader.fs" />
+    <None Include="Source\Shaders\PointShader.fs" />
+    <None Include="Source\Shaders\PointShader.vs" />
     <None Include="Source\Shaders\Shader.fs" />
     <None Include="Source\Shaders\Shader.vs" />
     <None Include="Source\Shaders\SimpleShader.fs" />
