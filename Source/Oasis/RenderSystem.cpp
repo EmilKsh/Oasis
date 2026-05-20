@@ -331,6 +331,9 @@ namespace render_system
 
 	void RenderSystem::DrawCircle(const float x, const float y, const float r, const int numberOfSides, Colors color)
 	{
+		const GLboolean depthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
+
 		const int& numberOfVertices = numberOfSides + 2;
 		circleVertices.clear();
 		circleVertices.reserve(static_cast<size_t>(numberOfVertices) * 3);
@@ -360,11 +363,16 @@ namespace render_system
 		glBindVertexArray(VAO);
 		
 		glDrawArrays(GL_TRIANGLE_FAN, 0, numberOfVertices);
+		if (depthTestEnabled)
+			glEnable(GL_DEPTH_TEST);
 	}
 
 
 	void RenderSystem::DrawPoint(const float x, const float y, const float pointSize, Colors color)
 	{
+		const GLboolean depthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
+
 		vector<GLfloat> vertices;
 
 		vertices.push_back(x + pointSize / 2.f);
@@ -403,6 +411,68 @@ namespace render_system
 
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 18);
+		if (depthTestEnabled)
+			glEnable(GL_DEPTH_TEST);
+	}
+
+	void RenderSystem::DrawLine(const float x1, const float y1, const float x2, const float y2, glm::vec3 color, const float width)
+	{
+		const GLboolean depthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
+
+		const GLfloat vertices[] = {
+			x1, y1, 0.0f,
+			x2, y2, 0.0f
+		};
+
+		defaultShader.use();
+		defaultShader.set3fv("myColor", color);
+
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+
+		glLineWidth(width);
+		glDrawArrays(GL_LINES, 0, 2);
+		glLineWidth(1.0f);
+		glBindVertexArray(0);
+		if (depthTestEnabled)
+			glEnable(GL_DEPTH_TEST);
+	}
+
+	void RenderSystem::DrawFilledRect(const float x, const float y, const float width, const float height, glm::vec3 color)
+	{
+		const GLboolean depthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
+
+		const float x2 = x + width;
+		const float y2 = y + height;
+		const GLfloat vertices[] = {
+			x, y, 0.0f,
+			x2, y, 0.0f,
+			x2, y2, 0.0f,
+			x, y, 0.0f,
+			x2, y2, 0.0f,
+			x, y2, 0.0f
+		};
+
+		defaultShader.use();
+		defaultShader.set3fv("myColor", color);
+
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+		if (depthTestEnabled)
+			glEnable(GL_DEPTH_TEST);
 	}
 
 	glm::vec2 RenderSystem::ToScreenSpaceFitHorizontal(double x, double y, const float worldSize[2])
@@ -514,6 +584,9 @@ namespace render_system
 
 	void RenderSystem::RenderText(std::string text, float x, float y, float scale, glm::vec3 color)
 	{
+		const GLboolean depthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
+
 		// activate corresponding render state	
 		textShader.use();
 
@@ -556,5 +629,7 @@ namespace render_system
 		}
 		glBindVertexArray(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
+		if (depthTestEnabled)
+			glEnable(GL_DEPTH_TEST);
 	}
 }

@@ -32,6 +32,8 @@ namespace render_system {
 		void RenderPointCloud(const vector<float>& positions, const vector<float>& colors, const int& count, Shader& shader, const float& pointSize);
 		void DrawCircle(const float x, const float y, const float r, const int numberOfSides = 8, Colors color = Colors::White);
 		void DrawPoint(const float x, const float y, const float pointSize = 0.01f, Colors color = Colors::White);
+		void DrawLine(const float x1, const float y1, const float x2, const float y2, glm::vec3 color, const float width = 1.0f);
+		void DrawFilledRect(const float x, const float y, const float width, const float height, glm::vec3 color);
 		void AddToQueue(GraphicalObj* Obj);
 		void CalcDeltaTime();
 		bool CheckWindowClosureStatus();
