@@ -3,6 +3,7 @@
 #include<fstream>
 #include<map>
 #include<tuple>
+#include<algorithm>
 #include"IOModel.h"
 
 using model::Model, std::string;
@@ -32,12 +33,12 @@ namespace IOModel{
 		while (getline(file, fileAsText)) {
 
 			if (fileAsText.substr(0, fileAsText.find(" ") + 1) == "v ") {
-				const int numOfParams = std::count(fileAsText.begin(), fileAsText.end(), ' ');
+				const size_t numOfParams = static_cast<size_t>(std::count(fileAsText.begin(), fileAsText.end(), ' '));
 
-				rsize_t pos1 = fileAsText.find(" ") + 1;
+				size_t pos1 = fileAsText.find(" ") + 1;
 				for (size_t i = 0; i < numOfParams; i++)
 				{
-					const size_t& pos2 = fileAsText.substr(pos1).find(" ") + pos1;
+					const size_t pos2 = fileAsText.substr(pos1).find(" ") + pos1;
 
 					tempModel.vertexPoses.push_back(std::stof(fileAsText.substr(pos1, pos2 - pos1)));
 					pos1 = pos2 + 1;
@@ -45,12 +46,12 @@ namespace IOModel{
 			}
 
 			else if (fileAsText.substr(0, fileAsText.find(" ") + 1) == "vt ") {
-				const int& numOfParams = std::count(fileAsText.begin(), fileAsText.end(), ' ');
+				const size_t numOfParams = static_cast<size_t>(std::count(fileAsText.begin(), fileAsText.end(), ' '));
 
 				size_t pos1 = fileAsText.find(" ") + 1;
 				for (size_t i = 0; i < numOfParams; i++)
 				{
-					const size_t& pos2 = fileAsText.substr(pos1).find(" ") + pos1;
+					const size_t pos2 = fileAsText.substr(pos1).find(" ") + pos1;
 
 					tempModel.vertexTexCoords.push_back(std::stof(fileAsText.substr(pos1, pos2 - pos1)));
 					pos1 = pos2 + 1;
@@ -58,12 +59,12 @@ namespace IOModel{
 			}
 
 			else if (fileAsText.substr(0, fileAsText.find(" ") + 1) == "vn ") {
-				const int& numOfParams = std::count(fileAsText.begin(), fileAsText.end(), ' ');
+				const size_t numOfParams = static_cast<size_t>(std::count(fileAsText.begin(), fileAsText.end(), ' '));
 
 				size_t pos1 = fileAsText.find(" ") + 1;
 				for (size_t i = 0; i < numOfParams; i++)
 				{
-					const size_t& pos2 = fileAsText.substr(pos1).find(" ") + pos1;
+					const size_t pos2 = fileAsText.substr(pos1).find(" ") + pos1;
 
 					tempModel.vertexNormals.push_back(std::stof(fileAsText.substr(pos1, pos2 - pos1)));
 					pos1 = pos2 + 1;
@@ -71,23 +72,23 @@ namespace IOModel{
 			}
 
 			else if (fileAsText.substr(0, fileAsText.find(" ") + 1) == "f ") {
-				const int& numOfParams = std::count(fileAsText.begin(), fileAsText.end(), ' ');
+				const size_t numOfParams = static_cast<size_t>(std::count(fileAsText.begin(), fileAsText.end(), ' '));
 
 				size_t pos1 = fileAsText.find(" ") + 1;
 				for (size_t i = 0; i < numOfParams; i++)
 				{
-					const size_t& pos2 = fileAsText.substr(pos1).find(" ") + pos1;
-					const size_t& vtpos = fileAsText.substr(pos1).find("/") + pos1 + 1;
-					const size_t& vnpos = fileAsText.substr(vtpos).find("/") + vtpos + 1;
-					const int& vid = std::stoi(fileAsText.substr(pos1, pos2 - pos1)) - 1;
-					const size_t& vtid = std::stoi(fileAsText.substr(vtpos, vnpos - vtpos - 1)) - 1;
-					const size_t& vnid = std::stoi(fileAsText.substr(vnpos, pos2)) - 1;
-					const std::tuple<int, int>& key{ vid, vtid };
+					const size_t pos2 = fileAsText.substr(pos1).find(" ") + pos1;
+					const size_t vtpos = fileAsText.substr(pos1).find("/") + pos1 + 1;
+					const size_t vnpos = fileAsText.substr(vtpos).find("/") + vtpos + 1;
+					const int vid = std::stoi(fileAsText.substr(pos1, pos2 - pos1)) - 1;
+					const int vtid = std::stoi(fileAsText.substr(vtpos, vnpos - vtpos - 1)) - 1;
+					const int vnid = std::stoi(fileAsText.substr(vnpos, pos2)) - 1;
+					const std::tuple<int, int> key{ vid, vtid };
 
 
 					if (!indexMap.contains(key))
 					{
-						indexMap[key] = tempBuffer.size() / 8;
+						indexMap[key] = static_cast<int>(tempBuffer.size() / 8);
 						tempBuffer.push_back(tempModel.vertexPoses.at(3 * vid));
 						tempBuffer.push_back(tempModel.vertexPoses.at(3 * vid + 1));
 						tempBuffer.push_back(tempModel.vertexPoses.at(3 * vid + 2));

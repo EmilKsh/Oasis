@@ -153,20 +153,24 @@
     <ClCompile Include="Libraries\glad.c" />
     <ClCompile Include="Source\Oasis\Light.cpp" />
     <ClCompile Include="Source\Oasis\IOModel.cpp" />
+    <ClCompile Include="Source\Oasis\InputManager.cpp" />
     <ClCompile Include="Source\Oasis\Model.cpp" />
     <ClCompile Include="Source\Oasis\Camera.cpp" />
     <ClCompile Include="Source\Oasis\GraphicalObject.cpp" />
     <ClCompile Include="Source\Oasis\RenderSystem.cpp" />
     <ClCompile Include="Source\Oasis\Shader.cpp" />
+    <ClCompile Include="Source\Oasis\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Headers\Light.h" />
     <ClInclude Include="Source\Headers\IOModel.h" />
+    <ClInclude Include="Source\Headers\InputManager.h" />
     <ClInclude Include="Source\Headers\Model.h" />
     <ClInclude Include="Source\Headers\Camera.h" />
     <ClInclude Include="Source\Headers\GraphicalObject.h" />
     <ClInclude Include="Source\Headers\RenderSystem.h" />
     <ClInclude Include="Source\Headers\Shader.h" />
+    <ClInclude Include="Source\Headers\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleShader.fs" />

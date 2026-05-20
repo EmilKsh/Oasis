@@ -5,6 +5,7 @@
 #include FT_FREETYPE_H
 #include"GraphicalObject.h"
 #include"Camera.h"
+#include"InputManager.h"
 #include"Light.h"
 
 
@@ -40,7 +41,9 @@ namespace render_system {
 		void RenderText(std::string text, float x, float y, float scale, glm::vec3 color);
 
 		float GetDeltaTime();
-		glm::vec2 GetCursorPos() { return glm::vec2(LastMPx, LastMPy); };
+		glm::vec2 GetCursorPos() const { return input.GetCursorPos(); };
+		InputManager& GetInput() { return input; }
+		const InputManager& GetInput() const { return input; }
 		
 	public:
 		float aspecRatio;
@@ -49,29 +52,30 @@ namespace render_system {
 		float lastFrame = 0.0f; // Time of last frame
 		float currentFrame = 0.0f;
 		int WindowSize[2] = { 1280, 720 };
-		float LastMPx{ WindowSize[0] / 2.0f }, LastMPy{ WindowSize[1] / 2.0f }, DeltaMPx{ 0.0f }, DeltaMPy{ 0.0f };
-		float pitch{ 0.0f }, roll{ 0.0f }, yaw{ -90.0f };
-		bool left_mouse_button, right_mouse_button, firstMouse{ true };
 		bool initialized{ false };
 
 
 		GLFWwindow* window{ nullptr };
 		char* windowName{};
+		InputManager input{};
 		vector<GraphicalObj*> RenderQueue{};
+		glm::vec3 cameraPos{ 0.0f, 0.0f, 3.0f };
+		glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f };
+		glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };
 		glm::vec3 direction{ 0.f };
+		float pitch{ 0.0f };
+		float yaw{ -90.0f };
 		Camera defaultCam;
 		Light pointLight;
-		GLuint VAO, VBO, posVBO, colVBO, textVAO, textVBO;
+		GLuint VAO{}, VBO{}, posVBO{}, colVBO{}, textVAO{}, textVBO{};
 		Shader defaultShader, pointShader;
 		Shader textShader;
 		vector<GLfloat> circleVertices{};
 
 		std::map<char, Character> Characters;
 
-		static void cursor_pos_callBack(GLFWwindow* window, double xpos, double ypos);
+		void UpdateCameraFromInput();
 		static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-		static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-		static void mouse_clicked(GLFWwindow* window, int button, int action, int mod);
 
 	};
 }

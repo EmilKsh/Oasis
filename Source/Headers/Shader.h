@@ -18,24 +18,30 @@ using std::string;
 class Shader
 {
 public:
-	unsigned int ID;
+	unsigned int ID{};
 	Shader();
+	~Shader();
+
+	Shader(const Shader&) = delete;
+	Shader& operator=(const Shader&) = delete;
+
+	Shader(Shader&& other) noexcept;
+	Shader& operator=(Shader&& other) noexcept;
+
 	bool Init(string shaderFilePath);
 	void use();
-	void AddTexture(const char* filePath);
 	void setBool(const string &name, bool value) const;
 	void setInt(const string& name, int value) const;
 	void setFloat(const string& name, float value) const;
 	void set3fv(const string& name, glm::vec3 value) const;
 	void set4mat(const string& name, glm::mat4 mat);
-	bool HasTexture();
-	unsigned int texture{};
+	bool IsValid() const { return ID != 0; }
+	void Release();
 
 private:
-	bool HasTextureFlag{ false };
-	const char* vShaderCode;
-	const char* fShaderCode;
-	int vertex, fragment;
+	const char* vShaderCode{};
+	const char* fShaderCode{};
+	int vertex{}, fragment{};
 	std::string vertexCode;
 	std::string fragmentCode;
 	std::ifstream vShaderFile;

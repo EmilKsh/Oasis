@@ -6,6 +6,7 @@
 #include"RenderSystem.h"
 #include"Model.h"
 #include"IOModel.h"
+#include"Texture.h"
 
 //#include<ft2build.h>
 //#include FT_FREETYPE_H
@@ -27,18 +28,20 @@ int main()
 	RenderSystem RS(window);
 
 	Shader basicShader;
-	//basicShader.AddTexture("./Textures/TestTexture.jpg");
+	basicShader.Init("./Source/Shaders/Shader");
 	Model suzanneMesh = LoadObjModel("./Meshes/Suzanne.obj");
 	GraphicalObj  suzanneGraphicalObj;
-	suzanneGraphicalObj.SetShader(&basicShader);
+	suzanneGraphicalObj.SetShader(basicShader);
 	suzanneGraphicalObj.VertexUpdate(&suzanneMesh.vertexBuffer, &suzanneMesh.indices);
-	suzanneGraphicalObj.BufferUpdate();
 	suzanneGraphicalObj.transform(glm::vec3(1.f,1.f,1.f), glm::vec3(0.f, 0.f, -3.f), glm::vec3(0.f,0.f,0.f));
 
 	Shader testShader;
-	testShader.AddTexture("./Textures/TestTexture.jpg");
+	testShader.Init("./Source/Shaders/Shader");
+	Texture testTexture;
+	testTexture.LoadFromFile("./Textures/TestTexture.jpg");
 	GraphicalObj GroundPlane;
-	GroundPlane.SetShader(&testShader);
+	GroundPlane.SetShader(testShader);
+	GroundPlane.SetTexture(testTexture);
 	GroundPlane.BufferUpdate();
 	GroundPlane.transform(glm::vec3(10.f, 10.f, 10.f), glm::vec3(0.f, -1.f, -0.f), glm::vec3(1.f, 0.f, 0.f) * glm::radians(90.f));
 
@@ -49,9 +52,8 @@ int main()
 	{
 		suzanneGraphicalObj.transform(glm::vec3(1.f), glm::vec3(0.f), timer * glm::vec3(0.f, 1.f, 0.f) * 20.f);
 		RS.RenderTheQueue();
-		timer += RS.getDeltaTime();
+		timer += RS.GetDeltaTime();
 	}
 	
-	RS.Terminate();
 	return 0;
 }

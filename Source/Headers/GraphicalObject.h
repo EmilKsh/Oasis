@@ -6,6 +6,7 @@
 #include<string_view>
 #include<vector>
 #include"Shader.h"
+#include"Texture.h"
 #include<map>
 
 using std::vector;
@@ -18,8 +19,20 @@ extern std::map<Colors, glm::vec3> ColorValues;
 class GraphicalObj {
 
 public:
+	GraphicalObj() = default;
 	~GraphicalObj();
+
+	GraphicalObj(const GraphicalObj&) = delete;
+	GraphicalObj& operator=(const GraphicalObj&) = delete;
+
+	GraphicalObj(GraphicalObj&& other) noexcept;
+	GraphicalObj& operator=(GraphicalObj&& other) noexcept;
+
 	void SetShader(Shader* shader);
+	void SetShader(Shader& shader);
+	void SetTexture(Texture* texture);
+	void SetTexture(Texture& texture);
+	void VertexUpdate(const vector<float>& vertices, const vector<int>* indices = nullptr);
 	void VertexUpdate(vector<float>* vertices, vector<int>* indices = nullptr);
 	void BufferUpdate();
 	void DrawShape(Colors color = Colors::White);
@@ -43,9 +56,13 @@ public:
 	};
 
 private:
-	Shader* shader;
+	void ReleaseBuffers();
+
+	Shader* shader{};
+	Texture* texture{};
 	GLuint VBO{}, VAO{}, EBO{};
-	const char* texturePath;
+	GLsizei vertexCount{};
+	GLsizei indexCount{};
 	glm::mat4 transformMatrix{glm::mat4(1.f)};
 };
 #endif // !GUI_H4

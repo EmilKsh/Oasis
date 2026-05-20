@@ -1,14 +1,40 @@
 #include"shader.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include<stb_image.h>
+
+#include <utility>
 
 Shader::Shader()
 {
     //Init();
 }
 
+Shader::~Shader()
+{
+    Release();
+}
+
+Shader::Shader(Shader&& other) noexcept
+{
+    ID = std::exchange(other.ID, 0);
+    vertex = std::exchange(other.vertex, 0);
+    fragment = std::exchange(other.fragment, 0);
+}
+
+Shader& Shader::operator=(Shader&& other) noexcept
+{
+    if (this != &other)
+    {
+        Release();
+        ID = std::exchange(other.ID, 0);
+        vertex = std::exchange(other.vertex, 0);
+        fragment = std::exchange(other.fragment, 0);
+    }
+
+    return *this;
+}
+
 bool Shader::Init(string shaderFilePath)
 {
+    Release();
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
@@ -67,40 +93,6 @@ void Shader::use()
     glUseProgram(ID);
 }
 
-
-void Shader::AddTexture(const char* filePath)
-{
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glGenTextures(1, &this->texture);
-    glBindTexture(GL_TEXTURE_2D, this->texture);
-    std::cout << "texture created" << std::endl;
-    // set the texture wrapping/filtering options (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load and generate the texture
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load(filePath, &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        HasTextureFlag = true;
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-}
-
-
 void Shader::setBool(const string& name, bool value) const
 {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
@@ -146,7 +138,11 @@ void Shader::checkCompileErrors(int shader, std::string type)
     }
 }
 
-bool Shader::HasTexture() 
+void Shader::Release()
 {
-    return this->HasTextureFlag;
+    if (ID != 0)
+    {
+        glDeleteProgram(ID);
+        ID = 0;
+    }
 }

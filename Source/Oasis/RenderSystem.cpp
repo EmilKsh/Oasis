@@ -52,20 +52,6 @@ namespace render_system
 		}
 	}
 
-	struct KeyFlags
-	{
-		bool UpKeyPressed{ false };
-		bool LeftKeyPressed{ false };
-		bool RightKeyPressed{ false };
-		bool DownKeyPressed{ false };
-	};
-
-	KeyFlags flags;
-
-	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-	glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
 	//--------------------------------------------------- CallBacks 
 	void RenderSystem::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	{
@@ -74,123 +60,15 @@ namespace render_system
 
 	void RenderSystem::ProcessInput(GLFWwindow* window)
 	{
-		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		if (input.IsKeyDown(GLFW_KEY_ESCAPE))
 		{
 			glfwSetWindowShouldClose(window, true);
 		}
-
-		const float cameraSpeed = 100.0f * GetDeltaTime(); // adjust accordingly
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			cameraPos += cameraSpeed * cameraFront;
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			cameraPos -= cameraSpeed * cameraFront;
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-			cameraPos += cameraUp * cameraSpeed;
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-			cameraPos -= cameraUp * cameraSpeed;
-	}
-
-	void RenderSystem::cursor_pos_callBack(GLFWwindow* window, double xpos, double ypos)
-	{
-		RenderSystem* self = (RenderSystem*)(glfwGetWindowUserPointer(window));
-		const float mouseX = static_cast<float>(xpos);
-		const float mouseY = static_cast<float>(ypos);
-
-		if (self->firstMouse)
-		{
-			self->LastMPx = mouseX;
-			self->LastMPy = mouseY;
-			self->firstMouse = false;
-		}
-
-		self->DeltaMPx = mouseX - self->LastMPx;
-		self->DeltaMPy = self->LastMPy - mouseY;
-		self->LastMPx = mouseX;
-		self->LastMPy = mouseY;
-
-		const float sensitivity = 0.1f;
-		self->DeltaMPx *= sensitivity;
-		self->DeltaMPy *= sensitivity;
-
-		self->pitch += self->DeltaMPy;
-		self->yaw += self->DeltaMPx;
-
-		if (self->pitch > 180.0f)
-			self->pitch = 180.0f;
-		else if (self->pitch < -180)
-			self->pitch = -180;
-		if (self->yaw > 180.0f)
-			self->yaw = 180.0f;
-		else if (self->yaw < -180)
-			self->yaw = -180;
-
-		self->direction.x = cos(glm::radians(self->yaw)) * cos(glm::radians(self->pitch));
-		self->direction.y = sin(glm::radians(self->pitch));
-		self->direction.z = sin(glm::radians(self->yaw)) * cos(glm::radians(self->pitch));
-		cameraFront = glm::normalize(self->direction);
-	}
-
-	void RenderSystem::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-	{
-
-		if (!(flags.UpKeyPressed && flags.RightKeyPressed && flags.LeftKeyPressed && flags.DownKeyPressed))
-		{
-			if (key == GLFW_KEY_UP && action == GLFW_PRESS)
-			{
-				flags.UpKeyPressed = true;
-			}
-			else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
-			{
-				flags.LeftKeyPressed = true;
-			}
-			else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
-			{
-				flags.RightKeyPressed = true;
-			}
-			else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
-			{
-				flags.DownKeyPressed = true;
-			}
-		}
-		else
-		{
-			if (key == GLFW_KEY_UP && action == GLFW_RELEASE)
-			{
-				flags.UpKeyPressed = false;
-			}
-			else if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE)
-			{
-				flags.LeftKeyPressed = false;
-			}
-			else if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE)
-			{
-				flags.RightKeyPressed = false;
-			}
-			else if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE)
-			{
-				flags.DownKeyPressed = false;
-			}
-		}
-	}
-
-	void RenderSystem::mouse_clicked(GLFWwindow* window, int button, int action, int mod)
-	{
-		RenderSystem* self = (RenderSystem*)(glfwGetWindowUserPointer(window));
-
-		self->left_mouse_button = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1);
-		self->right_mouse_button = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2);
 	}
 
 
 	RenderSystem::RenderSystem(int window_size[2], char* windowName) : WindowSize{ window_size[0], window_size[1] }, windowName{ windowName }
 	{
-		LastMPx = WindowSize[0] / 2.0f;
-		LastMPy = WindowSize[1] / 2.0f;
-
 		aspecRatio = float(window_size[0]) / window_size[1];
 
 		if (GLFWInit() != 0)
@@ -202,11 +80,13 @@ namespace render_system
 		glGenBuffers(1, &posVBO);
 		glGenBuffers(1, &colVBO);
 		glGenVertexArrays(1, &VAO);
-		defaultShader.Init("../Oasis/Source/Shaders/SimpleShader");
-		pointShader.Init("../Oasis/Source/Shaders/PointShader");
 
 		const std::filesystem::path oasisRoot = FindOasisRoot();
 		if (!defaultShader.Init(ToPathString(oasisRoot / "Source" / "Shaders" / "SimpleShader")))
+		{
+			return;
+		}
+		if (!pointShader.Init(ToPathString(oasisRoot / "Source" / "Shaders" / "PointShader")))
 		{
 			return;
 		}
@@ -263,14 +143,11 @@ namespace render_system
 			return -1;
 		}
 
-		glfwSetWindowUserPointer(window, this);
+		input.Attach(window);
 		// CallBacks -----------------------------------------------
 		// updating viewport size if window size is changed CallBack
 
 		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-		glfwSetCursorPosCallback(window, cursor_pos_callBack);
-		glfwSetMouseButtonCallback(window, mouse_clicked);
-		glfwSetKeyCallback(window, key_callback);
 		glEnable(GL_DEPTH_TEST);
 		
 		return 0;
@@ -288,6 +165,8 @@ namespace render_system
 		if (!initialized || window == nullptr)
 			return;
 
+		CalcDeltaTime();
+		ProcessInput(window);
 		glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
@@ -297,7 +176,6 @@ namespace render_system
 		if (!initialized || window == nullptr)
 			return;
 
-		ProcessInput(window);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -323,13 +201,7 @@ namespace render_system
 		{
 			for (GraphicalObj* GObj : RenderQueue)
 			{
-				CalcDeltaTime();
-
-				// Camera
-				if (right_mouse_button)
-				{
-					defaultCam.setTransform(cameraPos, cameraFront, cameraUp);
-				}
+				UpdateCameraFromInput();
 				const glm::mat4& view = defaultCam.getView();
 				const glm::mat4& projection = defaultCam.GetProjection();
 
@@ -351,6 +223,47 @@ namespace render_system
 	void RenderSystem::AddToQueue(GraphicalObj* Obj)
 	{
 		RenderQueue.push_back(Obj);
+	}
+
+	void RenderSystem::UpdateCameraFromInput()
+	{
+		const float cameraSpeed = 100.0f * GetDeltaTime();
+		if (input.IsKeyDown(GLFW_KEY_W))
+			cameraPos += cameraSpeed * cameraFront;
+		if (input.IsKeyDown(GLFW_KEY_S))
+			cameraPos -= cameraSpeed * cameraFront;
+		if (input.IsKeyDown(GLFW_KEY_A))
+			cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		if (input.IsKeyDown(GLFW_KEY_D))
+			cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		if (input.IsKeyDown(GLFW_KEY_E))
+			cameraPos += cameraUp * cameraSpeed;
+		if (input.IsKeyDown(GLFW_KEY_Q))
+			cameraPos -= cameraUp * cameraSpeed;
+
+		if (input.IsMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT))
+		{
+			const glm::vec2 mouseDelta = input.GetCursorDelta() * 0.1f;
+			pitch -= mouseDelta.y;
+			yaw += mouseDelta.x;
+
+			if (pitch > 180.0f)
+				pitch = 180.0f;
+			else if (pitch < -180.0f)
+				pitch = -180.0f;
+			if (yaw > 180.0f)
+				yaw = 180.0f;
+			else if (yaw < -180.0f)
+				yaw = -180.0f;
+
+			direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+			direction.y = sin(glm::radians(pitch));
+			direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+			cameraFront = glm::normalize(direction);
+		}
+
+		defaultCam.setTransform(cameraPos, cameraFront, cameraUp);
+		input.BeginFrame();
 	}
 
 	void RenderSystem::RenderPointCloud(const vector<float>& positions, const vector<float>& colors, const int& count, Shader& shader, const float& pointSize)
@@ -394,9 +307,19 @@ namespace render_system
 
 		// Unbinding and closing all glfw windows and clearing opbjects
 		glDeleteBuffers(1, &VBO);
+		glDeleteBuffers(1, &posVBO);
+		glDeleteBuffers(1, &colVBO);
 		glDeleteVertexArrays(1, &VAO);
 		glDeleteBuffers(1, &textVBO);
 		glDeleteVertexArrays(1, &textVAO);
+		for (auto& character : Characters)
+		{
+			glDeleteTextures(1, &character.second.TextureID);
+		}
+		Characters.clear();
+		defaultShader.Release();
+		pointShader.Release();
+		textShader.Release();
 		glBindVertexArray(0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);

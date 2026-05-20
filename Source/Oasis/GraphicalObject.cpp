@@ -1,5 +1,7 @@
 #include"GraphicalObject.h"
 
+#include <utility>
+
 std::map<Colors, glm::vec3> ColorValues = {
 	{Colors::Amber, glm::vec3(1.0f, 0.75f, 0.0f) },
 	{Colors::White, glm::vec3(1.0f, 1.0f, 1.0f) },
@@ -9,26 +11,65 @@ std::map<Colors, glm::vec3> ColorValues = {
 
 GraphicalObj::~GraphicalObj()
 {
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
-	glDeleteVertexArrays(1, &VAO);
+	ReleaseBuffers();
+}
+
+GraphicalObj::GraphicalObj(GraphicalObj&& other) noexcept
+{
+	vertexBuffer = std::move(other.vertexBuffer);
+	indexBuffer = std::move(other.indexBuffer);
+	shader = std::exchange(other.shader, nullptr);
+	texture = std::exchange(other.texture, nullptr);
+	VBO = std::exchange(other.VBO, 0);
+	VAO = std::exchange(other.VAO, 0);
+	EBO = std::exchange(other.EBO, 0);
+	vertexCount = std::exchange(other.vertexCount, 0);
+	indexCount = std::exchange(other.indexCount, 0);
+	transformMatrix = other.transformMatrix;
+}
+
+GraphicalObj& GraphicalObj::operator=(GraphicalObj&& other) noexcept
+{
+	if (this != &other)
+	{
+		ReleaseBuffers();
+		vertexBuffer = std::move(other.vertexBuffer);
+		indexBuffer = std::move(other.indexBuffer);
+		shader = std::exchange(other.shader, nullptr);
+		texture = std::exchange(other.texture, nullptr);
+		VBO = std::exchange(other.VBO, 0);
+		VAO = std::exchange(other.VAO, 0);
+		EBO = std::exchange(other.EBO, 0);
+		vertexCount = std::exchange(other.vertexCount, 0);
+		indexCount = std::exchange(other.indexCount, 0);
+		transformMatrix = other.transformMatrix;
+	}
+
+	return *this;
 }
 
 void GraphicalObj::BufferUpdate()
 {
+	ReleaseBuffers();
+
+	if (vertexBuffer.empty())
+		return;
+
+	vertexCount = static_cast<GLsizei>(vertexBuffer.size() / 8);
+	indexCount = static_cast<GLsizei>(indexBuffer.size());
+
 	glGenBuffers(1, &this->VBO);
 	glGenVertexArrays(1, &this->VAO);
-	glGenBuffers(1, &this->EBO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(float), static_cast<const void*>(vertexBuffer.data()), GL_STATIC_DRAW);
-
-	glBindVertexArray(this->VAO);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(float), vertexBuffer.data(), GL_STATIC_DRAW);
 
 	if (!indexBuffer.empty())
 	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.size() * sizeof(int), static_cast<const void*>(indexBuffer.data()), GL_STATIC_DRAW);
+		glGenBuffers(1, &EBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.size() * sizeof(int), indexBuffer.data(), GL_STATIC_DRAW);
 	}
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
@@ -39,71 +80,60 @@ void GraphicalObj::BufferUpdate()
 
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(0);
 }
 
 
-void GraphicalObj::VertexUpdate(vector<float>* vertices, vector<int>* indices)
+void GraphicalObj::VertexUpdate(const vector<float>& vertices, const vector<int>* indices)
 {
-	vertexBuffer.clear();
-
-	for (float v : *vertices)
-		vertexBuffer.push_back(v);
+	vertexBuffer = vertices;
 
 	if (indices != nullptr)
-	{
-		indexBuffer.clear();
-		for (int i : *indices)
-			indexBuffer.push_back(i);
-	}
+		indexBuffer = *indices;
 	else 
-	{
 		indexBuffer.clear();
-	}
 
 	this->BufferUpdate();
 }
 
+void GraphicalObj::VertexUpdate(vector<float>* vertices, vector<int>* indices)
+{
+	if (vertices == nullptr)
+	{
+		vertexBuffer.clear();
+		indexBuffer.clear();
+		ReleaseBuffers();
+		return;
+	}
+
+	VertexUpdate(*vertices, indices);
+}
+
 void GraphicalObj::DrawShape(Colors color)
 {
-	//this->BufferUpdate();
-	if (shader)
+	if (shader == nullptr || VAO == 0)
+		return;
+
+	shader->set3fv("myColor", ColorValues[color]);
+	shader->setBool("hasTexture", texture != nullptr && texture->IsValid());
+	if (texture != nullptr && texture->IsValid())
 	{
-		shader->set3fv("myColor", ColorValues[color]);
-	}	
-
-	/*for (glm::vec3 trans: BoxLocations)
-	{*/
-	//transform(glm::vec3(1.f, 1.f, 1.f), glm::vec3(2.4f, -0.4f, -3.5f));
-
-	glBindVertexArray(this->VAO);
-	if (shader->HasTexture())
-	{
-		shader->setBool("hasTexture", true);
-		glBindTexture(GL_TEXTURE_2D, shader->texture);
-	
-		if (!indexBuffer.empty())
-		{	
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-			glDrawElements(GL_TRIANGLES, indexBuffer.size(), GL_UNSIGNED_INT, 0);
-		}
-		else
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		glBindTexture(GL_TEXTURE_2D, 0);
+		texture->Bind();
 	}
-	else
+
+	glBindVertexArray(VAO);
+	if (indexCount > 0)
 	{
-		shader->setBool("hasTexture", false);
-		if (!indexBuffer.empty())
-		{
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-			glDrawElements(GL_TRIANGLES, indexBuffer.size(), GL_UNSIGNED_INT, 0);
-		}
-		else
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
 	}
+	else if (vertexCount > 0)
+	{
+		glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+	}
+
 	glBindVertexArray(0);
-	//}
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 
@@ -128,7 +158,44 @@ void GraphicalObj::SetShader(Shader* shader)
 	this->shader = shader;
 }
 
+void GraphicalObj::SetShader(Shader& shader)
+{
+	this->shader = &shader;
+}
+
+void GraphicalObj::SetTexture(Texture* texture)
+{
+	this->texture = texture;
+}
+
+void GraphicalObj::SetTexture(Texture& texture)
+{
+	this->texture = &texture;
+}
+
 glm::mat4 GraphicalObj::GetTransformMat() 
 {
 	return transformMatrix;
+}
+
+void GraphicalObj::ReleaseBuffers()
+{
+	if (VBO != 0)
+	{
+		glDeleteBuffers(1, &VBO);
+		VBO = 0;
+	}
+	if (EBO != 0)
+	{
+		glDeleteBuffers(1, &EBO);
+		EBO = 0;
+	}
+	if (VAO != 0)
+	{
+		glDeleteVertexArrays(1, &VAO);
+		VAO = 0;
+	}
+
+	vertexCount = 0;
+	indexCount = 0;
 }
