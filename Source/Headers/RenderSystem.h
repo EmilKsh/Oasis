@@ -23,6 +23,8 @@ namespace render_system {
 		~RenderSystem();
 		int GLFWInit();
 		int FreeTypeInit();
+		void BeginFrame();
+		void EndFrame();
 		void UpdateWindow();
 		void ProcessInput(GLFWwindow* window);
 		void RenderTheQueue();
@@ -50,6 +52,7 @@ namespace render_system {
 		float LastMPx{ WindowSize[0] / 2.0f }, LastMPy{ WindowSize[1] / 2.0f }, DeltaMPx{ 0.0f }, DeltaMPy{ 0.0f };
 		float pitch{ 0.0f }, roll{ 0.0f }, yaw{ -90.0f };
 		bool left_mouse_button, right_mouse_button, firstMouse{ true };
+		bool initialized{ false };
 
 
 		GLFWwindow* window{ nullptr };
@@ -61,6 +64,7 @@ namespace render_system {
 		GLuint VAO, VBO, posVBO, colVBO, textVAO, textVBO;
 		Shader defaultShader, pointShader;
 		Shader textShader;
+		vector<GLfloat> circleVertices{};
 
 		std::map<char, Character> Characters;
 

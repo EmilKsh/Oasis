@@ -7,7 +7,7 @@ Shader::Shader()
     //Init();
 }
 
-void Shader::Init(string shaderFilePath)
+bool Shader::Init(string shaderFilePath)
 {
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -29,7 +29,8 @@ void Shader::Init(string shaderFilePath)
     }
     catch (std::ifstream::failure e)
     {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ: " << shaderFilePath << std::endl;
+        return false;
     }
 
     vShaderCode = vertexCode.c_str();
@@ -58,6 +59,7 @@ void Shader::Init(string shaderFilePath)
     glUseProgram(ID);
     /*unsigned int transLocation = glGetUniformLocation(this->ID, "transform");
     glUniformMatrix4fv(transLocation, 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));*/
+    return true;
 }
 
 void Shader::use()

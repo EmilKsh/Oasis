@@ -20,7 +20,7 @@ class Shader
 public:
 	unsigned int ID;
 	Shader();
-	void Init(string shaderFilePath);
+	bool Init(string shaderFilePath);
 	void use();
 	void AddTexture(const char* filePath);
 	void setBool(const string &name, bool value) const;

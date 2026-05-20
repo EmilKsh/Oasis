@@ -1,7 +1,57 @@
 #include "RenderSystem.h"
+#include <filesystem>
+#include <vector>
 
 namespace render_system
 {
+	namespace
+	{
+		bool IsOasisRoot(const std::filesystem::path& path)
+		{
+			return std::filesystem::exists(path / "Source" / "Shaders")
+				&& std::filesystem::exists(path / "Fonts");
+		}
+
+		std::filesystem::path FindOasisRoot()
+		{
+			const std::filesystem::path sourcePath = std::filesystem::absolute(__FILE__);
+			for (std::filesystem::path path = sourcePath.parent_path(); !path.empty(); path = path.parent_path())
+			{
+				if (IsOasisRoot(path))
+					return path;
+
+				if (path == path.root_path())
+					break;
+			}
+
+			const std::filesystem::path cwd = std::filesystem::current_path();
+			const std::vector<std::filesystem::path> candidates{
+				cwd,
+				cwd / "Oasis",
+				cwd / "..",
+				cwd / ".." / "Oasis",
+				cwd / ".." / "..",
+				cwd / ".." / ".." / "Oasis",
+				cwd / ".." / ".." / "..",
+				cwd / ".." / ".." / ".." / "Oasis"
+			};
+
+			for (const std::filesystem::path& candidate : candidates)
+			{
+				const std::filesystem::path normalized = std::filesystem::weakly_canonical(candidate);
+				if (IsOasisRoot(normalized))
+					return normalized;
+			}
+
+			return cwd;
+		}
+
+		std::string ToPathString(const std::filesystem::path& path)
+		{
+			return path.lexically_normal().string();
+		}
+	}
+
 	struct KeyFlags
 	{
 		bool UpKeyPressed{ false };
@@ -47,18 +97,20 @@ namespace render_system
 	void RenderSystem::cursor_pos_callBack(GLFWwindow* window, double xpos, double ypos)
 	{
 		RenderSystem* self = (RenderSystem*)(glfwGetWindowUserPointer(window));
+		const float mouseX = static_cast<float>(xpos);
+		const float mouseY = static_cast<float>(ypos);
 
 		if (self->firstMouse)
 		{
-			self->LastMPx = xpos;
-			self->LastMPy = ypos;
+			self->LastMPx = mouseX;
+			self->LastMPy = mouseY;
 			self->firstMouse = false;
 		}
 
-		self->DeltaMPx = xpos - self->LastMPx;
-		self->DeltaMPy = self->LastMPy - ypos;
-		self->LastMPx = xpos;
-		self->LastMPy = ypos;
+		self->DeltaMPx = mouseX - self->LastMPx;
+		self->DeltaMPy = self->LastMPy - mouseY;
+		self->LastMPx = mouseX;
+		self->LastMPy = mouseY;
 
 		const float sensitivity = 0.1f;
 		self->DeltaMPx *= sensitivity;
@@ -141,7 +193,11 @@ namespace render_system
 
 		aspecRatio = float(window_size[0]) / window_size[1];
 
-		GLFWInit();
+		if (GLFWInit() != 0)
+		{
+			return;
+		}
+
 		glGenBuffers(1, &VBO);
 		glGenBuffers(1, &posVBO);
 		glGenBuffers(1, &colVBO);
@@ -149,19 +205,34 @@ namespace render_system
 		defaultShader.Init("../Oasis/Source/Shaders/SimpleShader");
 		pointShader.Init("../Oasis/Source/Shaders/PointShader");
 
-		FreeTypeInit();
+		const std::filesystem::path oasisRoot = FindOasisRoot();
+		if (!defaultShader.Init(ToPathString(oasisRoot / "Source" / "Shaders" / "SimpleShader")))
+		{
+			return;
+		}
+
+		if (FreeTypeInit() != 0)
+		{
+			return;
+		}
+
+		initialized = true;
+		BeginFrame();
 	}
 
 	RenderSystem::~RenderSystem() 
 	{
-		glDeleteBuffers(1, &VBO);
-		glDeleteVertexArrays(1, &VAO);
+		Terminate();
 	}
 
 	int RenderSystem::GLFWInit()
 	{
 		// GLFW initialization ----------------------------------------
-		glfwInit();
+		if (!glfwInit())
+		{
+			printf("GLFW initialization failed.\n");
+			return -1;
+		}
 
 		// setting window hints aka OpenGL version and profile
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -186,6 +257,10 @@ namespace render_system
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
 			std::cout << "Failed to initialize GLAD" << std::endl;
+			glfwDestroyWindow(window);
+			window = nullptr;
+			glfwTerminate();
+			return -1;
 		}
 
 		glfwSetWindowUserPointer(window, this);
@@ -202,27 +277,43 @@ namespace render_system
 	}
 
 	bool RenderSystem::CheckWindowClosureStatus() {
+		if (!initialized || window == nullptr)
+			return false;
+
 		return !glfwWindowShouldClose(window);
 	}
 
-	void RenderSystem::UpdateWindow() 
+	void RenderSystem::BeginFrame()
 	{
-		ProcessInput(window);
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+		if (!initialized || window == nullptr)
+			return;
+
 		glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void RenderSystem::RenderTheQueue()
+	void RenderSystem::EndFrame()
 	{
-		// GLFW background setup
+		if (!initialized || window == nullptr)
+			return;
 
 		ProcessInput(window);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void RenderSystem::UpdateWindow()
+	{
+		EndFrame();
+		BeginFrame();
+	}
+
+	void RenderSystem::RenderTheQueue()
+	{
+		if (!initialized || window == nullptr)
+			return;
+
+		BeginFrame();
 			
 		//RenderQueue[1]->transform(glm::vec3(1.f, 1.f, 1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.0f, 0.f) * glm::radians(totalTime*1000));
 		pointLight.position.x = 3.f * cos(totalTime * 100.f);
@@ -254,6 +345,7 @@ namespace render_system
 			}
 		}
 		totalTime += deltaTime;
+		EndFrame();
 	}
 
 	void RenderSystem::AddToQueue(GraphicalObj* Obj)
@@ -285,7 +377,7 @@ namespace render_system
 
 	void RenderSystem::CalcDeltaTime()
 	{
-		currentFrame = glfwGetTime();
+		currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 	}
@@ -297,28 +389,39 @@ namespace render_system
 
 	void RenderSystem::Terminate()
 	{
+		if (window == nullptr)
+			return;
+
 		// Unbinding and closing all glfw windows and clearing opbjects
+		glDeleteBuffers(1, &VBO);
+		glDeleteVertexArrays(1, &VAO);
+		glDeleteBuffers(1, &textVBO);
+		glDeleteVertexArrays(1, &textVAO);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glfwDestroyWindow(window);
+		window = nullptr;
+		initialized = false;
 		glfwTerminate();
 	}
 
 	void RenderSystem::DrawCircle(const float x, const float y, const float r, const int numberOfSides, Colors color)
 	{
 		const int& numberOfVertices = numberOfSides + 2;
-		vector<GLfloat> vertices;
+		circleVertices.clear();
+		circleVertices.reserve(static_cast<size_t>(numberOfVertices) * 3);
 
-		vertices.push_back(x);
-		vertices.push_back(y * aspecRatio);
-		vertices.push_back(0);
+		circleVertices.push_back(x);
+		circleVertices.push_back(y * aspecRatio);
+		circleVertices.push_back(0);
 
 		for (size_t i = 0; i < numberOfVertices - 1; i++)
 		{
 			const float& angle = i * 2 * glm::pi<float>() / numberOfSides;
-			vertices.push_back(x + sin(angle) * r); // x
-			vertices.push_back(y + cos(angle) * r * aspecRatio); // y
-			vertices.push_back(0);
+			circleVertices.push_back(x + sin(angle) * r); // x
+			circleVertices.push_back(y + cos(angle) * r * aspecRatio); // y
+			circleVertices.push_back(0);
 		}
 
 		defaultShader.use();
@@ -326,7 +429,7 @@ namespace render_system
 
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, circleVertices.size() * sizeof(GLfloat), circleVertices.data(), GL_DYNAMIC_DRAW);
 		
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
@@ -395,8 +498,14 @@ namespace render_system
 
 	int RenderSystem::FreeTypeInit()
 	{
+		const std::filesystem::path oasisRoot = FindOasisRoot();
+
 		// Setting up text shader
-		textShader.Init("../Oasis/Source/Shaders/TextShader");
+		if (!textShader.Init(ToPathString(oasisRoot / "Source" / "Shaders" / "TextShader")))
+		{
+			return -1;
+		}
+
 		glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WindowSize[0]), 0.0f, static_cast<float>(WindowSize[1]));
 		textShader.use();
 		glUniformMatrix4fv(glGetUniformLocation(textShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
@@ -412,9 +521,11 @@ namespace render_system
 
 		FT_Face face;
 
-		if (FT_New_Face(ft, "../Oasis/Fonts/SourceCodePro-Regular.ttf", 0, &face))
+		const std::string fontPath = ToPathString(oasisRoot / "Fonts" / "SourceCodePro-Regular.ttf");
+		if (FT_New_Face(ft, fontPath.c_str(), 0, &face))
 		{
-			printf("ERROR::FreeType: Failed to load font.\n");
+			printf("ERROR::FreeType: Failed to load font: %s\n", fontPath.c_str());
+			FT_Done_FreeType(ft);
 			return -1;
 		}
 		
@@ -457,7 +568,7 @@ namespace render_system
 				texture,
 				glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
 				glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-				face->glyph->advance.x
+				static_cast<unsigned int>(face->glyph->advance.x)
 			};
 			Characters.insert(std::pair<char, Character>(c, character));
 		}
