@@ -90,6 +90,10 @@ namespace render_system
 		{
 			return;
 		}
+		if (!pointShader3D.Init(ToPathString(oasisRoot / "Source" / "Shaders" / "PointShader3D")))
+		{
+			return;
+		}
 
 		if (FreeTypeInit() != 0)
 		{
@@ -288,6 +292,40 @@ namespace render_system
 		glBindVertexArray(0);
 	}
 
+	void RenderSystem::RenderPointCloud(const std::vector<glm::vec3>& positions, const std::vector<glm::vec3>& colors, int count, Shader& shader, float pointSize)
+	{
+		glBindVertexArray(VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			positions.size() * sizeof(glm::vec3),
+			positions.data(),
+			GL_DYNAMIC_DRAW
+		);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, colVBO);
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			colors.size() * sizeof(glm::vec3),
+			colors.data(),
+			GL_DYNAMIC_DRAW
+		);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+		glEnableVertexAttribArray(1);
+
+		shader.use();
+		shader.set4mat("view", defaultCam.getView());
+		shader.set4mat("projection", defaultCam.GetProjection());
+
+		glPointSize(pointSize);
+		glDrawArrays(GL_POINTS, 0, count);
+
+		glBindVertexArray(0);
+	}
+
 	void RenderSystem::CalcDeltaTime()
 	{
 		currentFrame = static_cast<float>(glfwGetTime());
@@ -319,6 +357,7 @@ namespace render_system
 		Characters.clear();
 		defaultShader.Release();
 		pointShader.Release();
+		pointShader3D.Release();
 		textShader.Release();
 		glBindVertexArray(0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
