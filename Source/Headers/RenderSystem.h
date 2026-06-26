@@ -36,11 +36,11 @@ namespace render_system {
 			Shader& shader, 
 			const float& pointSize);
 		void RenderPointCloud(
-			const std::vector<glm::vec3>& positions,
-			const std::vector<glm::vec3>& colors,
-			int count,
-			Shader& shader,
-			float pointSize);
+			const std::vector<glm::vec3>& positions, 
+			const vector<float>& pointSizes, 
+			const std::vector<glm::vec3>& colors, 
+			int count, 
+			Shader& shader);
 		void DrawCircle(const float x, const float y, const float r, const int numberOfSides = 8, Colors color = Colors::White);
 		void DrawPoint(const float x, const float y, const float pointSize = 0.01f, Colors color = Colors::White);
 		void DrawLine(const float x1, const float y1, const float x2, const float y2, glm::vec3 color, const float width = 1.0f);
@@ -80,7 +80,7 @@ namespace render_system {
 		float yaw{ -90.0f };
 		Camera defaultCam;
 		Light pointLight;
-		GLuint VAO{}, VBO{}, posVBO{}, colVBO{}, textVAO{}, textVBO{};
+		GLuint VAO{}, VBO{}, posVBO{}, colVBO{}, textVAO{}, textVBO{}, pointSizeVBO{};
 		Shader defaultShader, pointShader, pointShader3D;
 		Shader textShader;
 		vector<GLfloat> circleVertices{};

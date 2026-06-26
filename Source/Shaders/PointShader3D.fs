@@ -2,6 +2,7 @@
 out vec4 FragColor;
 
 in vec3 pointColor;
+in float particleSize;
 
 void main()
 {

@@ -79,6 +79,7 @@ namespace render_system
 		glGenBuffers(1, &VBO);
 		glGenBuffers(1, &posVBO);
 		glGenBuffers(1, &colVBO);
+		glGenBuffers(1, &pointSizeVBO);
 		glGenVertexArrays(1, &VAO);
 
 		const std::filesystem::path oasisRoot = FindOasisRoot();
@@ -153,6 +154,7 @@ namespace render_system
 
 		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_PROGRAM_POINT_SIZE);
 		
 		return 0;
 	}
@@ -292,14 +294,14 @@ namespace render_system
 		glBindVertexArray(0);
 	}
 
-	void RenderSystem::RenderPointCloud(const std::vector<glm::vec3>& positions, const std::vector<glm::vec3>& colors, int count, Shader& shader, float pointSize)
+	void RenderSystem::RenderPointCloud(const std::vector<glm::vec3>& positions, const vector<float>& pointSizes, const std::vector<glm::vec3>& colors, int count, Shader& shader)
 	{
 		glBindVertexArray(VAO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferData(
 			GL_ARRAY_BUFFER,
-			positions.size() * sizeof(glm::vec3),
+			count * sizeof(glm::vec3),
 			positions.data(),
 			GL_DYNAMIC_DRAW
 		);
@@ -309,18 +311,27 @@ namespace render_system
 		glBindBuffer(GL_ARRAY_BUFFER, colVBO);
 		glBufferData(
 			GL_ARRAY_BUFFER,
-			colors.size() * sizeof(glm::vec3),
+			count * sizeof(glm::vec3),
 			colors.data(),
 			GL_DYNAMIC_DRAW
 		);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
 		glEnableVertexAttribArray(1);
 
+		glBindBuffer(GL_ARRAY_BUFFER, pointSizeVBO);
+		glBufferData(
+			GL_ARRAY_BUFFER, 
+			count * sizeof(float), 
+			pointSizes.data(), 
+			GL_DYNAMIC_DRAW);
+		glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+		glEnableVertexAttribArray(2);
+
 		shader.use();
 		shader.set4mat("view", defaultCam.getView());
 		shader.set4mat("projection", defaultCam.GetProjection());
 
-		glPointSize(pointSize);
+		//glPointSize(pointSize);
 		glDrawArrays(GL_POINTS, 0, count);
 
 		glBindVertexArray(0);
@@ -347,6 +358,7 @@ namespace render_system
 		glDeleteBuffers(1, &VBO);
 		glDeleteBuffers(1, &posVBO);
 		glDeleteBuffers(1, &colVBO);
+		glDeleteBuffers(1, &pointSizeVBO);
 		glDeleteVertexArrays(1, &VAO);
 		glDeleteBuffers(1, &textVBO);
 		glDeleteVertexArrays(1, &textVAO);
